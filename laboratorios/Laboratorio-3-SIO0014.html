@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio 3 · SIO0014 Análisis forense</title>
+<style>
+/* Hoja común de los laboratorios de SIO0010. Misma identidad del laboratorio 1.
+   Al final está la hoja de impresión: el PDF de cada laboratorio sale de este mismo archivo. */
+:root{
+  --naranja:#F36406; --naranja-lav:#FDEFE9; --azul:#154361; --azul-lav:#E9F0F5;
+  --tinta:#15171C; --tinta-2:#4A505C; --gris:#5C5C5C; --papel:#FFFFFF; --papel-2:#F4F4F4;
+  --linea:#D8DBDF; --linea-suave:#E9EBEE; --verde:#1B6B47; --verde-lav:#E1F0E8;
+  --rojo:#A8321B; --rojo-lav:#FBEAE6;
+  --mono:"Consolas","Cascadia Mono",ui-monospace,monospace;
+  --sans:Arial,Helvetica,sans-serif; --titular:"Arial Black",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel-2);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px 80px;background:var(--papel)}
+header.top{padding:26px 0 0}
+.marca{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.marca img{height:40px;width:auto}
+.regla{height:5px;background:var(--tinta);margin:0 0 12px}
+.kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--gris)}
+h1{font-family:var(--titular);font-size:38px;line-height:1.1;margin:8px 0 14px;letter-spacing:-.01em}
+.lead{font-size:16px;color:var(--tinta-2);max-width:78ch}
+.aviso{border-left:4px solid var(--naranja);background:var(--naranja-lav);padding:12px 16px;margin:18px 0}
+.aviso b{color:var(--tinta)}
+.adv{border-left:4px solid var(--rojo);background:var(--rojo-lav);padding:12px 16px;margin:16px 0;font-size:14.5px;color:var(--tinta-2)}
+.adv b{color:var(--rojo)}
+section{margin-top:44px;scroll-margin-top:16px}
+.sec-h{border-top:4px solid var(--tinta);padding-top:10px;margin-bottom:16px}
+.sec-n{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--naranja)}
+h2{font-family:var(--titular);font-size:25px;margin:6px 0 0;letter-spacing:-.01em}
+h3{font-size:16px;margin:22px 0 8px}
+.nav{position:sticky;top:0;background:var(--papel);border-bottom:1px solid var(--linea);padding:10px 0;z-index:9;display:flex;gap:6px;flex-wrap:wrap}
+.nav a{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--gris);border:1px solid var(--linea);padding:5px 9px;border-radius:2px}
+.nav a:hover{color:var(--naranja);border-color:var(--naranja)}
+.panel{border:1px solid var(--linea);border-radius:3px;padding:16px;margin:14px 0;background:var(--papel)}
+.et{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--azul);margin-bottom:7px}
+textarea,input[type=text],input[type=number],select{width:100%;font-family:var(--mono);font-size:13px;padding:9px 11px;border:1px solid var(--linea);border-radius:2px;background:var(--papel);color:var(--tinta);resize:vertical}
+textarea{min-height:72px}
+.fila{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.fila label{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);font-weight:700}
+button{font-family:var(--sans);font-size:13px;font-weight:700;padding:8px 15px;border:1px solid var(--tinta);background:var(--tinta);color:#fff;border-radius:2px;cursor:pointer}
+button:hover{background:var(--naranja);border-color:var(--naranja)}
+button.sec{background:transparent;color:var(--tinta)}
+button.sec:hover{color:var(--naranja)}
+button:disabled{opacity:.45;cursor:default}
+input[type=range]{flex:1;min-width:190px;accent-color:var(--naranja)}
+.sal{font-family:var(--mono);font-size:13px;background:var(--papel-2);border:1px solid var(--linea-suave);border-radius:2px;padding:11px 13px;white-space:pre-wrap;word-break:break-word;min-height:42px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.dos,.tres{grid-template-columns:1fr}}
+.imgs{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:8px}
+.imgs figure{margin:0;text-align:center}
+.imgs img{width:230px;height:230px;image-rendering:pixelated;border:1px solid var(--linea)}
+.imgs figcaption{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-top:8px;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:8px}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--azul);padding:7px 9px;font-weight:700}
+td{padding:6px 9px;border-bottom:1px solid var(--linea-suave);color:var(--tinta-2);vertical-align:top}
+td b{color:var(--tinta)}
+.leyenda{font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-top:14px;line-height:1.7}
+.ok{color:var(--verde);font-weight:700}
+.mal{color:var(--naranja);font-weight:700}
+.rojo{color:var(--rojo);font-weight:700}
+details{border:1px solid var(--linea);border-radius:2px;padding:10px 14px;margin-top:12px;background:var(--papel-2)}
+summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--azul)}
+details p{margin:9px 0 0;font-size:14px;color:var(--tinta-2)}
+details p:first-of-type{margin-top:10px}
+
+/* bloque de comandos con botón de copiar */
+.cmd{position:relative;background:#15171C;border-radius:3px;padding:13px 15px;margin:11px 0;overflow-x:auto}
+.cmd pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#E8EAED;white-space:pre}
+.cmd .c{color:#8A9199}
+.cmd .n{color:#F0A26A}
+.cmd .copiar{position:absolute;top:8px;right:8px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;background:transparent;color:#8A9199;border:1px solid #3A3F47}
+.cmd .copiar:hover{color:#fff;background:transparent;border-color:#8A9199}
+.cmd-t{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--azul);margin:16px 0 -4px}
+
+/* pasos numerados */
+ol.pasos{margin:12px 0 0;padding:0;list-style:none;counter-reset:pp}
+ol.pasos li{counter-increment:pp;display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--linea-suave)}
+ol.pasos li:last-child{border-bottom:0}
+ol.pasos li::before{content:counter(pp);flex:0 0 22px;height:22px;border-radius:50%;background:var(--azul);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+ol.pasos li b{display:block;color:var(--tinta)}
+ol.pasos li span{font-size:14.5px;color:var(--tinta-2)}
+
+/* tarjetas */
+.tarj{border:1px solid var(--linea);border-radius:3px;padding:13px 15px;background:var(--papel)}
+.tarj.fill{background:var(--papel-2)}
+.tarj.az{background:var(--azul-lav);border-color:#C6D5E0}
+.tarj.na{background:var(--naranja-lav);border-color:#F5CFBF}
+.tarj h4{margin:0 0 5px;font-size:14px}
+.tarj p{margin:0;font-size:13.5px;color:var(--tinta-2)}
+
+/* entregable */
+.ent{border:2px solid var(--tinta);border-radius:3px;padding:15px 17px;margin-top:16px}
+.ent .et{color:var(--naranja)}
+.ent ul{margin:8px 0 0;padding-left:19px;font-size:14.5px;color:var(--tinta-2)}
+.ent li{margin-bottom:5px}
+
+/* casillas de verificación */
+ul.chk{margin:10px 0 0;padding:0;list-style:none}
+ul.chk li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--linea-suave);font-size:14.5px;color:var(--tinta-2)}
+ul.chk li:last-child{border-bottom:0}
+ul.chk li::before{content:"";flex:0 0 13px;height:13px;border:1.5px solid var(--azul);border-radius:2px;margin-top:4px}
+
+/* repaso */
+.preg{border:1px solid var(--linea);border-radius:3px;padding:13px 15px;margin-bottom:9px}
+.preg .q{font-weight:700;margin-bottom:8px}
+.preg .ops{display:flex;gap:7px;flex-wrap:wrap}
+.preg .ops button{font-size:12px;padding:6px 11px;background:transparent;color:var(--tinta);border-color:var(--linea)}
+.preg .ops button.elegida{background:var(--azul);color:#fff;border-color:var(--azul)}
+.preg .fb{margin-top:9px;font-size:13.5px;display:none}
+
+footer{margin-top:54px;border-top:1px solid var(--linea);padding-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+/* ───────────────────────── impresión ─────────────────────────
+   El PDF de cada laboratorio se genera de este mismo archivo. */
+@media print{
+  @page{ size:A4; margin:15mm 14mm 14mm }
+  body{background:#fff;font-size:10.2pt;line-height:1.45}
+  .wrap{max-width:none;padding:0;background:#fff}
+  .nav{display:none}
+  button,input[type=range],.copiar{display:none!important}
+  h1{font-size:25pt}
+  h2{font-size:15pt}
+  h3{font-size:11.5pt}
+  .lead{font-size:10.6pt;max-width:none}
+  section{margin-top:18pt;page-break-inside:auto}
+  .sec-h{page-break-after:avoid}
+  .panel,.tarj,.ent,.preg,.adv,.aviso,details,.cmd{page-break-inside:avoid}
+  .cmd{background:#F4F4F4;border:.7pt solid var(--linea)}
+  .cmd pre{color:#15171C;font-size:8.6pt}
+  .cmd .c{color:#6A7078}
+  .cmd .n{color:#A8321B}
+  .sal{min-height:0;font-size:8.6pt}
+  .inter .sal{display:none}
+  .inter::after{content:"Panel interactivo · ábralo en el navegador para ejecutarlo";display:block;font-family:var(--mono);font-size:8.4pt;letter-spacing:.06em;color:var(--gris);border-top:.7pt solid var(--linea-suave);margin-top:8px;padding-top:7px}
+  details{background:#fff}
+  details summary{list-style:none;color:var(--azul)}
+  details summary::-webkit-details-marker{display:none}
+  table{font-size:9pt}
+  th{padding:5px 7px;font-size:7.4pt}
+  td{padding:4.5px 7px}
+  .imgs img{width:150px;height:150px}
+  footer{margin-top:20pt;font-size:8pt}
+  a{color:inherit;text-decoration:none}
+}
+
+</style>
+</head>
+<body>
+<script>
+/* Utilidades comunes de los laboratorios (heredadas de SIO0010, usadas también en SIO0013 y SIO0014).
+   Todo ocurre en el navegador: no hay peticiones de red. Cada laboratorio guarda su avance en el almacenamiento local. */
+
+const $  = id => document.getElementById(id);
+const $$ = sel => Array.prototype.slice.call(document.querySelectorAll(sel));
+
+/* ---------- bytes, hexadecimal y texto ---------- */
+const UTF8 = new TextEncoder();
+const DEC  = new TextDecoder();
+
+function bytes(txt){ return UTF8.encode(txt); }
+function texto(buf){ return DEC.decode(buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf); }
+function hex(buf){
+  const b = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+  return Array.prototype.map.call(b, v => v.toString(16).padStart(2, "0")).join("");
+}
+function desdeHex(s){
+  s = (s || "").replace(/[^0-9a-fA-F]/g, "");
+  const b = new Uint8Array(s.length >> 1);
+  for (let i = 0; i < b.length; i++) b[i] = parseInt(s.substr(i * 2, 2), 16);
+  return b;
+}
+function aleatorio(n){ const b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
+function bloques(h, n){ return (h.match(new RegExp(".{1," + (n * 2) + "}", "g")) || []).join(" "); }
+
+/* ---------- copiar bloques de comandos ---------- */
+function montarCopias(){
+  $$(".cmd").forEach(function(caja){
+    if (caja.querySelector(".copiar")) return;
+    const b = document.createElement("button");
+    b.className = "copiar"; b.type = "button"; b.textContent = "copiar";
+    b.addEventListener("click", function(){
+      const t = caja.querySelector("pre").innerText;
+      const listo = function(){ b.textContent = "copiado"; setTimeout(function(){ b.textContent = "copiar"; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(listo, function(){ manual(t, listo); });
+      } else { manual(t, listo); }
+    });
+    caja.appendChild(b);
+  });
+  function manual(t, listo){          // sin permiso de portapapeles: selección manual
+    const a = document.createElement("textarea");
+    a.value = t; a.style.position = "fixed"; a.style.opacity = "0";
+    document.body.appendChild(a); a.select();
+    try { document.execCommand("copy"); listo(); } catch (e) {}
+    document.body.removeChild(a);
+  }
+}
+
+/* ---------- repaso de opción múltiple ----------
+   preguntas: [[enunciado, respuesta, explicación], ...]   ·   opciones: ["A", "B", ...] */
+function montarQuiz(cont, preguntas, opciones, idVer, idReset, idMarca){
+  const caja = $(cont);
+  const elegido = {};
+
+  function pinta(){
+    caja.innerHTML = "";
+    preguntas.forEach(function(p, i){
+      const d = document.createElement("div"); d.className = "preg";
+      const q = document.createElement("div"); q.className = "q"; q.textContent = (i + 1) + ". " + p[0];
+      const ops = document.createElement("div"); ops.className = "ops";
+      opciones.forEach(function(o){
+        const b = document.createElement("button"); b.type = "button"; b.textContent = o;
+        if (elegido[i] === o) b.className = "elegida";
+        b.addEventListener("click", function(){ elegido[i] = o; pinta(); marca(); });
+        ops.appendChild(b);
+      });
+      const fb = document.createElement("div"); fb.className = "fb"; fb.id = cont + "-fb" + i;
+      d.appendChild(q); d.appendChild(ops); d.appendChild(fb);
+      caja.appendChild(d);
+    });
+  }
+  function marca(){
+    const n = Object.keys(elegido).length;
+    if (idMarca) $(idMarca).textContent = n ? n + " de " + preguntas.length + " respondidas" : "";
+  }
+  function ver(){
+    preguntas.forEach(function(p, i){
+      const fb = $(cont + "-fb" + i);
+      const bien = elegido[i] === p[1];
+      fb.style.display = "block";
+      fb.innerHTML = '<span class="' + (bien ? "ok" : "mal") + '">' + (bien ? "Correcto" : "Respuesta: " + p[1]) +
+                     '</span> · <span style="color:var(--tinta-2)">' + p[2] + "</span>";
+    });
+  }
+  function reinicia(){ for (const k in elegido) delete elegido[k]; pinta(); marca(); }
+
+  if (idVer)   $(idVer).addEventListener("click", ver);
+  if (idReset) $(idReset).addEventListener("click", reinicia);
+  pinta();
+}
+
+/* ---------- cronómetro ---------- */
+async function cronometra(fn){
+  const t = performance.now();
+  const r = await fn();
+  return { ms: performance.now() - t, r: r };
+}
+function ms(v){ return v >= 1000 ? (v / 1000).toFixed(2) + " s" : v.toFixed(1) + " ms"; }
+
+/* ---------- impresión: los desplegables salen abiertos ---------- */
+function abreTodo(){ $$("details").forEach(function(d){ d.open = true; }); }
+window.addEventListener("beforeprint", abreTodo);
+if (window.matchMedia) {
+  const mq = window.matchMedia("print");
+  if (mq.addEventListener) mq.addEventListener("change", function(e){ if (e.matches) abreTodo(); });
+}
+
+document.addEventListener("DOMContentLoaded", montarCopias);
+
+</script>
+<style>
+section{scroll-margin-top:60px}
+code{font-family:var(--mono);font-size:.92em;background:var(--papel-2);padding:1px 4px;border-radius:2px}
+.scroll{overflow-x:auto}
+.lab.pide{display:block;font-family:var(--sans);font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--tinta);font-weight:600;line-height:1.4;margin:14px 0 6px}
+textarea.resp{font-family:var(--sans);font-size:14px;min-height:80px;width:100%}
+.chk{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:6px 0}
+.chk>div{display:flex;flex-direction:column;gap:4px;flex:1;min-width:230px}
+.chk label{font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--tinta)}
+.chk input{font-family:var(--mono);font-size:13px}
+.fb{font-size:13px;font-weight:700;min-height:18px}
+.fb.ok{color:var(--verde)}.fb.mal{color:var(--rojo)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tabs button{font-family:var(--mono);font-size:11.5px;font-weight:700;padding:6px 10px;background:transparent;color:var(--tinta);border:1px solid var(--linea)}
+.tabs button.sel{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.visor{max-height:430px;overflow:auto;border:1px solid var(--linea)}
+.visor table{margin:0;font-size:12.2px}
+.visor th{position:sticky;top:0;z-index:1}
+.visor td{font-family:var(--mono);font-size:11.6px;white-space:nowrap}
+.visor td.w{white-space:normal;min-width:240px}
+.visor tr.marca td{background:var(--naranja-lav)}
+.visor button.add{font-size:11px;padding:2px 7px;font-family:var(--mono)}
+.barra{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin:8px 0}
+.barra>div{display:flex;flex-direction:column;gap:4px}
+.barra label{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);font-weight:700}
+#linea td{font-size:12.5px;vertical-align:top}
+#linea td.h{font-family:var(--mono);white-space:nowrap}
+#linea select,#linea input{font-size:12px;padding:3px 5px;width:auto}
+.metodo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--linea);border-top:3px solid var(--azul);margin:10px 0 14px}
+.metodo>div{padding:9px 11px;border-right:1px solid var(--linea-suave);font-size:13px;line-height:1.42;color:var(--tinta-2)}
+.metodo>div:last-child{border-right:0}
+@media(max-width:900px){.metodo{grid-template-columns:minmax(0,1fr)}.metodo>div{border-right:0;border-bottom:1px solid var(--linea-suave)}}
+.en{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#fff;background:var(--azul);padding:2px 8px;border-radius:2px;margin-bottom:6px}
+#hoja{display:none}
+@media print{
+  .wrap>*:not(#hoja){display:none!important}
+  #hoja{display:block!important;font-size:9.4pt;line-height:1.36;color:#000}
+  #hoja h1{font-size:15pt;margin:0 0 2pt}
+  #hoja h2{font-family:var(--sans);font-size:10.4pt;font-weight:700;margin:9pt 0 3pt;border-bottom:.8pt solid #000;padding-bottom:1pt;page-break-after:avoid}
+  #hoja .pr{font-size:8.6pt;font-weight:700;margin:5pt 0 1pt;page-break-after:avoid}
+  #hoja .tx{white-space:pre-wrap;margin:0 0 3pt;border-left:1.4pt solid #000;padding-left:5pt;overflow-wrap:anywhere}
+  #hoja table{font-size:8pt;margin:2pt 0 4pt}
+  #hoja th{background:#fff;color:#000;border-bottom:1pt solid #000;padding:2pt 4pt;font-size:7.2pt}
+  #hoja td{color:#000;padding:2pt 4pt;border-bottom:.4pt solid #888;overflow-wrap:anywhere}
+  #hoja tr{page-break-inside:avoid}
+}
+</style>
+<div class="wrap">
+<header class="top">
+  <div class="marca"><img src="data:image/png;base64,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" alt="Institución Universitaria de Envigado"></div>
+  <div class="regla"></div>
+  <div class="kicker">SIO0014 · Análisis forense · Laboratorio 3 · Sesión 5 · Jueves 19 de noviembre · Bloque A · 60 minutos</div>
+  <h1>Lo que sobrevivió al reinicio</h1>
+  <p class="lead">El 12 de diciembre los peritos tomaron instantáneas con memoria de SRV-OPS-01 (E-01) y de SRV-DB-01 (E-02) desde el hipervisor. La de E-01 es posterior al reinicio de Julián: lo que había antes no está. Van a leer lo que sí está, con salidas de Volatility 3 y de otros analizadores, y a decidir qué cambia para el caso y para la empresa hoy. La tesis: <b>la memoria no guarda el pasado; guarda el presente, y a veces el presente es el problema.</b></p>
+  <div class="aviso"><b>Antes de empezar.</b> Las casillas de datos se comprueban solas; las de razonamiento son las que se evalúan. Lo que no esté en las salidas se escribe «no consta».</div>
+  <div class="aviso" style="border-left-color:var(--azul);background:var(--azul-lav)"><b>Qué son estas fuentes.</b> No son los archivos de memoria de 32 y 128 GB: son las salidas que un analista obtiene de ellos con Volatility 3 (información, árbol de procesos, líneas de órdenes, conexiones, extracción de ejecutables) y de dos fuentes del disco que se cruzan con la memoria (Amcache y el repositorio de WMI). Horas en UTC. Funciona sin conexión; su avance se guarda solo en este navegador.</div>
+  <div class="barra">
+    <div style="flex:1;min-width:240px"><label for="equipo">Nombre del equipo</label><input type="text" id="equipo" data-k="equipo" style="width:100%" autocomplete="off"></div>
+    <div style="flex:2;min-width:300px"><label for="integrantes">Integrantes</label><input type="text" id="integrantes" data-k="integrantes" style="width:100%" autocomplete="off"></div>
+  </div>
+  <div class="leyenda" id="estado" role="status">Cargando las fuentes…</div>
+</header>
+
+<nav class="nav noimp">
+  <a href="#vis">Fuentes</a><a href="#e1">1 · Cuándo</a><a href="#e2">2 · El proceso</a><a href="#e3">3 · La red</a><a href="#e4">4 · El mismo archivo</a><a href="#e5">5 · Otra mano</a><a href="#e6">6 · E-02</a><a href="#e7">7 · Qué cambia</a><a href="#e8">8 · Línea</a><a href="#ent">Entregable</a>
+</nav>
+
+<section>
+  <div class="sec-h"><div class="sec-n">Ritmo · 60 minutos · por equipos</div><h2>Cómo se reparte el tiempo</h2></div>
+  <div class="scroll"><table>
+    <thead><tr><th>Tramo</th><th class="num">Min</th><th>Qué queda escrito</th></tr></thead>
+    <tbody>
+      <tr><td>Recorrer las fuentes</td><td class="num">4</td><td>—</td></tr>
+      <tr><td>Ejercicio 1 · Cuándo es esta memoria</td><td class="num">5</td><td>Arranque y captura, en UTC y en hora local</td></tr>
+      <tr><td>Ejercicio 2 · El proceso que no debería estar</td><td class="num">10</td><td>Proceso, padre, ruta y por qué es anómalo</td></tr>
+      <tr><td>Ejercicio 3 · La red</td><td class="num">7</td><td>Destino y patrón</td></tr>
+      <tr><td>Ejercicio 4 · El mismo archivo en dos lugares</td><td class="num">8</td><td>SHA-1, rutas y cómo se relanza</td></tr>
+      <tr><td>Ejercicio 5 · Otra mano antes de la captura</td><td class="num">5</td><td>Contaminación del 12 dic</td></tr>
+      <tr><td>Ejercicio 6 · La memoria de E-02</td><td class="num">6</td><td>Lo que confirma y lo que no</td></tr>
+      <tr><td>Ejercicio 7 · Qué cambia, para el caso y para la empresa</td><td class="num">10</td><td>Hallazgos, limitación y recomendación</td></tr>
+      <tr><td>Exportar la hoja</td><td class="num">5</td><td>PDF</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="vis">
+  <div class="sec-h"><div class="sec-n">Las fuentes</div><h2>Visor de salidas</h2></div>
+  <p>Elijan una fuente y filtren por texto. El botón <b>+</b> lleva la fila a la línea de tiempo (ejercicio 8), que se suma a la del Laboratorio 2 en la Entrega 2.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="barra">
+    <div style="flex:2;min-width:260px"><label for="filtro">Filtrar (texto en cualquier columna)</label><input type="text" id="filtro" autocomplete="off" style="width:100%"></div>
+    <div><label for="utc">Hora</label><span><input type="checkbox" id="utc" style="width:auto"> Mostrar en UTC</span></div>
+    <div><label>Filas</label><span id="nfilas" class="leyenda" style="margin:0">—</span></div>
+  </div>
+  <div class="leyenda" id="desc"></div>
+  <div class="visor"><table id="tabla"></table></div>
+</section>
+
+<section id="e1">
+  <div class="sec-h"><div class="sec-n">Ejercicio 1 · 5 minutos</div><h2>¿Cuándo es esta memoria?</h2></div>
+  <div class="chk"><div><label for="c1">Hora UTC del arranque del sistema que muestra la memoria de E-01</label><input id="c1" data-k="c1" placeholder="AAAA-MM-DD HH:MM:SS"></div><div><label>&nbsp;</label><button type="button" data-c="c1">Comprobar</button><div class="fb" id="f_c1"></div></div></div>
+  <label class="lab pide" for="r1">Pásenla a hora local y crúcenla con la Parte 11. ¿Qué de lo ocurrido el 2, el 3 y el 11 de diciembre puede estar en esta memoria, y qué no puede estar?</label>
+  <textarea class="resp" id="r1" data-k="r1"></textarea>
+</section>
+
+<section id="e2">
+  <div class="sec-h"><div class="sec-n">Ejercicio 2 · 10 minutos</div><h2>El proceso que no debería estar</h2></div>
+  <p>Recorran <code>E01_pstree</code> y <code>E01_cmdline</code>. Un servidor de despachos tiene procesos esperables: los del sistema, los de la aplicación, el antivirus. Busquen el que no encaja por nombre, por padre o por ruta.</p>
+  <div class="chk"><div><label for="c2a">PID del proceso anómalo</label><input id="c2a" data-k="c2a"></div><div><label>&nbsp;</label><button type="button" data-c="c2a">Comprobar</button><div class="fb" id="f_c2a"></div></div></div>
+  <div class="chk"><div><label for="c2b">Ruta completa desde la que corre</label><input id="c2b" data-k="c2b"></div><div><label>&nbsp;</label><button type="button" data-c="c2b">Comprobar</button><div class="fb" id="f_c2b"></div></div></div>
+  <label class="lab pide" for="r2">¿Quién es su padre y por qué eso llama la atención? ¿Cuándo arrancó respecto al reinicio? ¿Cómo puede estar corriendo si el antivirus borró el binario y Julián eliminó la tarea el 11 de diciembre?</label>
+  <textarea class="resp" id="r2" data-k="r2"></textarea>
+</section>
+
+<section id="e3">
+  <div class="sec-h"><div class="sec-n">Ejercicio 3 · 7 minutos</div><h2>La red</h2></div>
+  <div class="chk"><div><label for="c3a">Dirección remota a la que intenta conectarse</label><input id="c3a" data-k="c3a"></div><div><label>&nbsp;</label><button type="button" data-c="c3a">Comprobar</button><div class="fb" id="f_c3a"></div></div></div>
+  <div class="chk"><div><label for="c3b">Cada cuántas horas lo intenta</label><input id="c3b" data-k="c3b"></div><div><label>&nbsp;</label><button type="button" data-c="c3b">Comprobar</button><div class="fb" id="f_c3b"></div></div></div>
+  <label class="lab pide" for="r3">¿Las conexiones se completaron, según lo que muestra la memoria? ¿Qué significa un patrón fijo de intentos? ¿Qué otra fuente del caso diría si alguna vez salió algo hacia esa dirección (el cortafuegos de la Parte 6), y quién tendría que exportarla?</label>
+  <textarea class="resp" id="r3" data-k="r3"></textarea>
+</section>
+
+<section id="e4">
+  <div class="sec-h"><div class="sec-n">Ejercicio 4 · 8 minutos</div><h2>El mismo archivo en dos lugares</h2></div>
+  <div class="chk"><div><label for="c4">SHA-1 del ejecutable extraído de la memoria</label><input id="c4" data-k="c4"></div><div><label>&nbsp;</label><button type="button" data-c="c4">Comprobar</button><div class="fb" id="f_c4"></div></div></div>
+  <label class="lab pide" for="r4">Comparen con <code>E01_amcache</code> y <code>E01_wmi_persistencia</code>. ¿En qué dos rutas estuvo ese mismo archivo y desde cuándo? ¿Qué mecanismo lo relanza al arrancar? Pongan las horas junto a la sesión VPN del 3 de diciembre del Laboratorio 2. ¿Qué cuenta aparece, y qué no se puede afirmar?</label>
+  <textarea class="resp" id="r4" data-k="r4"></textarea>
+</section>
+
+<section id="e5">
+  <div class="sec-h"><div class="sec-n">Ejercicio 5 · 5 minutos</div><h2>Otra mano antes de la captura</h2></div>
+  <div class="chk"><div><label for="c5">Cuenta que tenía una sesión de escritorio remoto abierta al momento de la captura</label><input id="c5" data-k="c5"></div><div><label>&nbsp;</label><button type="button" data-c="c5">Comprobar</button><div class="fb" id="f_c5"></div></div></div>
+  <label class="lab pide" for="r5">¿Qué hizo esa sesión antes de la instantánea de las 14:20 UTC? ¿Cómo se escribe en el acta y en el dictamen, sin juzgar a nadie? ¿Qué debió prever el plan de adquisición?</label>
+  <textarea class="resp" id="r5" data-k="r5"></textarea>
+</section>
+
+<section id="e6">
+  <div class="sec-h"><div class="sec-n">Ejercicio 6 · 6 minutos</div><h2>La memoria de E-02</h2></div>
+  <div class="chk"><div><label for="c6">Llamadas registradas a la actualización de cuentas de comercio</label><input id="c6" data-k="c6"></div><div><label>&nbsp;</label><button type="button" data-c="c6">Comprobar</button><div class="fb" id="f_c6"></div></div></div>
+  <label class="lab pide" for="r6">¿Cómo se explica ese número con lo que vieron en la tabla de auditoría? ¿Qué confirma la memoria sobre la consulta de 410.112 filas, y qué agrega a la bitácora de consultas lentas? ¿Qué cuenta aparece?</label>
+  <textarea class="resp" id="r6" data-k="r6"></textarea>
+</section>
+
+<section id="e7">
+  <div class="sec-h"><div class="sec-n">Ejercicio 7 · 10 minutos · pasos 7 y 8</div><h2>Qué cambia, para el caso y para la empresa</h2></div>
+  <label class="lab pide" for="r7a">¿Qué se perdió con el reinicio de las 9:40 a.m. del 11 de diciembre que esta memoria no puede devolver? Escríbanlo como limitación, en el formato del paso 8.</label>
+  <textarea class="resp" id="r7a" data-k="r7a"></textarea>
+  <label class="lab pide" for="r7b">Lo que encontraron sigue corriendo el 12 de diciembre en un servidor de producción. ¿Qué le recomiendan hoy a la empresa, a quién, y qué deben preservar antes de que lo contenga? (Separen lo forense de la respuesta: los dos se hacen.)</label>
+  <textarea class="resp" id="r7b" data-k="r7b"></textarea>
+  <label class="lab pide" for="r7c">¿Qué apoya este hallazgo, H1, H2 o ninguna? ¿Qué explicación alternativa queda abierta?</label>
+  <textarea class="resp" id="r7c" data-k="r7c"></textarea>
+</section>
+
+<section id="e8">
+  <div class="sec-h"><div class="sec-n">Ejercicio 8 · con el resto</div><h2>A la línea de tiempo</h2></div>
+  <p>Agreguen con <b>+</b> al menos 6 hechos de este laboratorio: arranque, creación del proceso, intentos de conexión, primera aparición en Amcache, la persistencia y la sesión del 12 dic.</p>
+  <div class="barra">
+    <div style="flex:1;min-width:190px"><label for="mh">Hora UTC (a mano)</label><input id="mh" placeholder="2025-12-12T14:20:41Z"></div>
+    <div style="flex:3;min-width:260px"><label for="mt">Hecho (a mano)</label><input id="mt"></div>
+    <div style="flex:1;min-width:160px"><label for="mf">Fuente</label><input id="mf" placeholder="E01_info"></div>
+    <div><label>&nbsp;</label><button type="button" id="madd">Agregar</button></div>
+  </div>
+  <div class="scroll"><table id="linea"><thead><tr><th>Hora UTC</th><th>Hora original</th><th>Hecho</th><th>Fuente</th><th>Tipo</th><th>Confianza</th><th>H1 · H2</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="leyenda" id="nlinea"></div>
+</section>
+
+<section id="ent">
+  <div class="sec-h"><div class="sec-n">Entregable · 5 minutos</div><h2>Qué se entrega y cómo se evalúa</h2></div>
+  <p>Una hoja por equipo con las respuestas y la línea de tiempo. Vale el 6 % de la nota, dentro de la evaluación de desempeño, y alimenta la sección de memoria de la Entrega 2.</p>
+  <div class="fila"><button type="button" id="imprimir">Imprimir o guardar como PDF</button> <button type="button" class="sec" id="borrar">Borrar el avance guardado</button></div>
+  <div class="scroll"><table>
+    <thead><tr><th>Criterio</th><th class="num">Peso</th><th>Cómo se ve bien hecho</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lectura de la memoria</b></td><td class="num">30 %</td><td>Proceso anómalo, padre, ruta, conexiones y patrón, con su fuente.</td></tr>
+      <tr><td><b>Cruce con el disco y con el Laboratorio 2</b></td><td class="num">25 %</td><td>Mismo SHA-1 en dos rutas, la persistencia y su hora junto a la sesión del 3 dic.</td></tr>
+      <tr><td><b>Contaminación y límites</b></td><td class="num">20 %</td><td>La sesión del 12 dic separada; lo perdido con el reinicio escrito como limitación.</td></tr>
+      <tr><td><b>Recomendación</b></td><td class="num">25 %</td><td>Contener sin destruir, a quién y con qué preservación previa; cuenta no es persona.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  <span>Institución Universitaria de Envigado · Facultad de Ingeniería</span>
+  <span>SIO0014 · Análisis forense · Laboratorio 3 · Caso ficticio con fines docentes</span>
+</footer>
+<div id="hoja"></div>
+</div>
+
+<script>
+const FUENTES = [
+  ["E01_info", "E-01 · windows.info: datos de la captura y del sistema.", "VmFyaWFibGUsVmFsb3IKQ2FwdHVyYSwiSW5zdGFudMOhbmVhIGNvbiBtZW1vcmlhIGRlc2RlIGVsIGhpcGVydmlzb3IsIGFyY2hpdm8gU1JWLU9QUy0wMS1TbmFwc2hvdDIudm1lbSIKSG9yYSBkZSBsYSBpbnN0YW50w6FuZWEgKFVUQyksMjAyNS0xMi0xMiAxNDoyMDo0MQpTaXN0ZW1hLCJXaW5kb3dzIFNlcnZlciAyMDE5ICgxMC4wLjE3NzYzKSwgeDY0IgpIb3JhIGRlIGFycmFucXVlIGRlbCBzaXN0ZW1hIChVVEMpLDIwMjUtMTItMTEgMTQ6NDM6MDUKTWVtb3JpYSwzMiBHQgpTSEEtMjU2IGRlbCBhcmNoaXZvIC52bWVtLGUzYjXigKYodmVyIGFjdGEgZGUgYWRxdWlzaWNpw7NuKQpIZXJyYW1pZW50YSxWb2xhdGlsaXR5IDMgKHZlcnNpw7NuIGFub3RhZGEgZW4gbGEgYml0w6Fjb3JhKQo=", 0],
+  ["E01_pstree", "E-01 · windows.pstree: procesos con su padre, hora de creación (UTC) y usuario.", "UElELFBQSUQsUHJvY2VzbyxDcmVhZG8gKFVUQyksU2VzacOzbixVc3VhcmlvIGRlbCBwcm9jZXNvCjQsMCxTeXN0ZW0sMjAyNS0xMi0xMSAxNDo0MzowNSwwLE5UIEFVVEhPUklUWVxTWVNURU0KNDEyLDQsc21zcy5leGUsMjAyNS0xMi0xMSAxNDo0MzowNSwwLE5UIEFVVEhPUklUWVxTWVNURU0KNTYwLDU0OCxjc3Jzcy5leGUsMjAyNS0xMi0xMSAxNDo0MzowNSwwLE5UIEFVVEhPUklUWVxTWVNURU0KNjM2LDU0OCx3aW5pbml0LmV4ZSwyMDI1LTEyLTExIDE0OjQzOjA1LDAsTlQgQVVUSE9SSVRZXFNZU1RFTQo3ODAsNjM2LHNlcnZpY2VzLmV4ZSwyMDI1LTEyLTExIDE0OjQzOjA3LDAsTlQgQVVUSE9SSVRZXFNZU1RFTQo3OTYsNjM2LGxzYXNzLmV4ZSwyMDI1LTEyLTExIDE0OjQzOjA3LDAsTlQgQVVUSE9SSVRZXFNZU1RFTQo5MDQsNzgwLHN2Y2hvc3QuZXhlLDIwMjUtMTItMTEgMTQ6NDM6MDgsMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjExODAsNzgwLHN2Y2hvc3QuZXhlLDIwMjUtMTItMTEgMTQ6NDM6MDksMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjE2MjIsOTA0LFdtaVBydlNFLmV4ZSwyMDI1LTEyLTExIDE0OjQ0OjMwLDAsTlQgQVVUSE9SSVRZXFNZU1RFTQo0NDEyLDE2MjIsc3ZjdXBkLmV4ZSwyMDI1LTEyLTExIDE0OjQ0OjMxLDAsTlQgQVVUSE9SSVRZXFNZU1RFTQoyMDA0LDc4MCxBVkFnZW50LmV4ZSwyMDI1LTEyLTExIDE0OjQzOjIwLDAsTlQgQVVUSE9SSVRZXFNZU1RFTQoyMjQwLDc4MCxMaXFNb2R1bGUuZXhlLDIwMjUtMTItMTEgMTQ6NDM6NDAsMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjIzMTYsNzgwLERlc3BhY2hvcy5leGUsMjAyNS0xMi0xMSAxNDo0Mzo0MSwwLE5UIEFVVEhPUklUWVxTWVNURU0KMjg5MCw3ODAsc3Bvb2xzdi5leGUsMjAyNS0xMi0xMSAxNDo0MzoyMiwwLE5UIEFVVEhPUklUWVxTWVNURU0KMzMxMCw3ODAsdm10b29sc2QuZXhlLDIwMjUtMTItMTEgMTQ6NDM6MjUsMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjUxMjAsMTE4MCx0YXNraG9zdHcuZXhlLDIwMjUtMTItMTIgMDY6MDA6MDAsMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjYwMDgsNzgwLHN2Y2hvc3QuZXhlLDIwMjUtMTItMTIgMTM6NTg6MTIsMCxOVCBBVVRIT1JJVFlcU1lTVEVNCjY1NDQsNjAwOCxyZHBjbGlwLmV4ZSwyMDI1LTEyLTEyIDE0OjA1OjMzLDIsRUFcYWNhbm8KNjYxMCw1OTgwLGV4cGxvcmVyLmV4ZSwyMDI1LTEyLTEyIDE0OjA1OjMxLDIsRUFcYWNhbm8KNjcwMiw2NjEwLG1tYy5leGUsMjAyNS0xMi0xMiAxNDowOTowMiwyLEVBXGFjYW5vCg==", 0],
+  ["E01_cmdline", "E-01 · windows.cmdline: línea de órdenes de cada proceso.", "UElELFByb2Nlc28sTMOtbmVhIGRlIMOzcmRlbmVzCjQxMixzbXNzLmV4ZSxcU3lzdGVtUm9vdFxTeXN0ZW0zMlxzbXNzLmV4ZQo3ODAsc2VydmljZXMuZXhlLEM6XFdpbmRvd3Ncc3lzdGVtMzJcc2VydmljZXMuZXhlCjc5Nixsc2Fzcy5leGUsQzpcV2luZG93c1xzeXN0ZW0zMlxsc2Fzcy5leGUKOTA0LHN2Y2hvc3QuZXhlLEM6XFdpbmRvd3Ncc3lzdGVtMzJcc3ZjaG9zdC5leGUgLWsgRGNvbUxhdW5jaCAtcAoxMTgwLHN2Y2hvc3QuZXhlLEM6XFdpbmRvd3Ncc3lzdGVtMzJcc3ZjaG9zdC5leGUgLWsgbmV0c3ZjcyAtcAoxNjIyLFdtaVBydlNFLmV4ZSxDOlxXaW5kb3dzXHN5c3RlbTMyXHdiZW1cd21pcHJ2c2UuZXhlIC1zZWN1cmVkIC1FbWJlZGRpbmcKNDQxMixzdmN1cGQuZXhlLEM6XFVzZXJzXFB1YmxpY1xMaWJyYXJpZXNcc3ZjdXBkLmV4ZSAtcwoyMDA0LEFWQWdlbnQuZXhlLEM6XFByb2dyYW0gRmlsZXNcQVZDb3JwXEFWQWdlbnQuZXhlCjIyNDAsTGlxTW9kdWxlLmV4ZSxDOlxFQVxMaXF1aWRhY2lvbmVzXExpcU1vZHVsZS5leGUgLS1zdmMKMjMxNixEZXNwYWNob3MuZXhlLEM6XEVBXERlc3BhY2hvc1xEZXNwYWNob3MuZXhlIC0tc3ZjCjI4OTAsc3Bvb2xzdi5leGUsQzpcV2luZG93c1xTeXN0ZW0zMlxzcG9vbHN2LmV4ZQozMzEwLHZtdG9vbHNkLmV4ZSxDOlxQcm9ncmFtIEZpbGVzXFZNd2FyZVxWTXdhcmUgVG9vbHNcdm10b29sc2QuZXhlCjUxMjAsdGFza2hvc3R3LmV4ZSx0YXNraG9zdHcuZXhlCjYwMDgsc3ZjaG9zdC5leGUsQzpcV2luZG93c1xzeXN0ZW0zMlxzdmNob3N0LmV4ZSAtayB0ZXJtc3Zjcwo2NTQ0LHJkcGNsaXAuZXhlLHJkcGNsaXAKNjYxMCxleHBsb3Jlci5leGUsQzpcV2luZG93c1xFeHBsb3Jlci5FWEUKNjcwMixtbWMuZXhlLEM6XFdpbmRvd3Ncc3lzdGVtMzJcbW1jLmV4ZSBDOlxXaW5kb3dzXHN5c3RlbTMyXGV2ZW50dndyLm1zYwo=", 0],
+  ["E01_netscan", "E-01 · windows.netscan: conexiones abiertas y restos de conexiones cerradas. UTC.", "UHJvdG9jb2xvLElQIGxvY2FsLFB1ZXJ0byBsb2NhbCxJUCByZW1vdGEsUHVlcnRvIHJlbW90byxFc3RhZG8sUElELFByb2Nlc28sQ3JlYWRvIChVVEMpClRDUHY0LDEwLjIwLjEwLjExLDQ0NSwwLjAuMC4wLDAsTElTVEVOSU5HLDQsU3lzdGVtLApUQ1B2NCwxMC4yMC4xMC4xMSwzMzg5LDAuMC4wLjAsMCxMSVNURU5JTkcsNjAwOCxzdmNob3N0LmV4ZSwKVENQdjQsMTAuMjAuMTAuMTEsMzM4OSwxMC4yMC4yMC4zMSw1NTEyMCxFU1RBQkxJU0hFRCw2MDA4LHN2Y2hvc3QuZXhlLDIwMjUtMTItMTIgMTQ6MDU6MjAKVENQdjQsMTAuMjAuMTAuMTEsNTE1NDQsMTAuMjAuMTAuMTIsNTQzMixFU1RBQkxJU0hFRCwyMjQwLExpcU1vZHVsZS5leGUsMjAyNS0xMi0xMSAxNDo0Mzo0NQpUQ1B2NCwxMC4yMC4xMC4xMSw1MTU1MCwxMC4yMC4xMC4xMiw1NDMyLEVTVEFCTElTSEVELDIzMTYsRGVzcGFjaG9zLmV4ZSwyMDI1LTEyLTExIDE0OjQzOjQ2ClRDUHY0LDEwLjIwLjEwLjExLDUyMjEwLDEwLjIwLjEwLjUsMzg5LEVTVEFCTElTSEVELDc5Nixsc2Fzcy5leGUsMjAyNS0xMi0xMiAxNDowMToxMApUQ1B2NCwxMC4yMC4xMC4xMSw0OTc0NCwxOTguNTEuMTAwLjIwMCw0NDMsQ0xPU0VELDQ0MTIsc3ZjdXBkLmV4ZSwyMDI1LTEyLTEyIDA4OjQ0OjMxClRDUHY0LDEwLjIwLjEwLjExLDQ5NjkwLDE5OC41MS4xMDAuMjAwLDQ0MyxDTE9TRUQsNDQxMixzdmN1cGQuZXhlLDIwMjUtMTItMTIgMDI6NDQ6MzEKVENQdjQsMTAuMjAuMTAuMTEsNDk2NTAsMTk4LjUxLjEwMC4yMDAsNDQzLENMT1NFRCw0NDEyLHN2Y3VwZC5leGUsMjAyNS0xMi0xMSAyMDo0NDozMQpUQ1B2NCwxMC4yMC4xMC4xMSw1MDExMiwxMC4yMC4xMC4yMCw0NDUsQ0xPU0VELDQsU3lzdGVtLDIwMjUtMTItMTEgMTQ6NTI6MDIK", 0],
+  ["E01_dumpfiles_hash", "E-01 · Ejecutable extraído de la memoria (windows.dumpfiles) y su SHA-1.", "UElELFByb2Nlc28sQXJjaGl2byBleHRyYcOtZG8gZGUgbWVtb3JpYSxTSEEtMSBkZSBsYSBpbWFnZW4gZGVsIGVqZWN1dGFibGUKNDQxMixzdmN1cGQuZXhlLGZpbGUuMHhkNDBmMWMyZThhMTAuc3ZjdXBkLmV4ZS5pbWcsNWIxZjBjMjdhOWU0ZDgzMzA2YzJmMWI4ZTdhNGQ5ZjAyYzZlOGIzMQo=", 0],
+  ["E01_amcache", "E-01 · Disco: Amcache.hve (AmcacheParser). UTC.", "UnV0YSxTSEEtMSxUYW1hw7FvLFByaW1lcmEgdmV6IHJlZ2lzdHJhZG8gKFVUQyksRnVlbnRlCmM6XHByb2dyYW1kYXRhXHN2Y3VwZC5leGUsNWIxZjBjMjdhOWU0ZDgzMzA2YzJmMWI4ZTdhNGQ5ZjAyYzZlOGIzMSwxODQzMjAsMjAyNS0xMi0wMyAwODowNzozMyxBbWNhY2hlLmh2ZSBkZSBFLTAxIChjb3BpYSBkZSBsb3MgcGVyaXRvcykKYzpcdXNlcnNccHVibGljXGxpYnJhcmllc1xzdmN1cGQuZXhlLDViMWYwYzI3YTllNGQ4MzMwNmMyZjFiOGU3YTRkOWYwMmM2ZThiMzEsMTg0MzIwLDIwMjUtMTItMDMgMDg6MDk6NDAsQW1jYWNoZS5odmUgZGUgRS0wMSAoY29waWEgZGUgbG9zIHBlcml0b3MpCmM6XGVhXGxpcXVpZGFjaW9uZXNcbGlxbW9kdWxlLmV4ZSw5YzBlNDFhYTczZDJiNmYxZTg1YTNjMGQ0N2I5ZTFmNmEyZDNjNGI1LDk0MzcxODQsMjAyNC0wNi0xNCAxMzowMjoxMSxBbWNhY2hlLmh2ZQpjOlxwcm9ncmFtIGZpbGVzXGF2Y29ycFxhdmFnZW50LmV4ZSwxZTJkM2M0YjVhNjk3ODg3OTZhNWI0YzNkMmUxZjBhOWI4YzdkNmU1LDUyNDI4ODAsMjAyMy0wMy0wMiAxNTo0MDowMCxBbWNhY2hlLmh2ZQo=", 0],
+  ["E01_wmi_persistencia", "E-01 · Disco: repositorio de WMI, suscripciones de eventos.", "Q2xhc2UsTm9tYnJlLERldGFsbGUsRnVlbnRlCl9fRXZlbnRGaWx0ZXIsU3lzVXBkRmlsdGVyLERpc3Bhcm86IGFsIGluaWNpYXIgZWwgc2lzdGVtYSAoY29uc3VsdGEgZGUgZXZlbnRvcyBkZSBpbmljaW8pLCJPQkpFQ1RTLkRBVEEsIHJlcG9zaXRvcmlvIFdNSSBlbiBDOlxXaW5kb3dzXFN5c3RlbTMyXHdiZW1cUmVwb3NpdG9yeSAoY29waWEgZGVsIGRpc2NvKSIKQ29tbWFuZExpbmVFdmVudENvbnN1bWVyLFN5c1VwZENvbnN1bWVyLEVqZWN1dGE6IEM6XFVzZXJzXFB1YmxpY1xMaWJyYXJpZXNcc3ZjdXBkLmV4ZSAtcyxNaXNtbyByZXBvc2l0b3JpbwpfX0ZpbHRlclRvQ29uc3VtZXJCaW5kaW5nLFN5c1VwZEZpbHRlciDihpIgU3lzVXBkQ29uc3VtZXIsQ3JlYWRvIGVsIDIwMjUtMTItMDMgMDg6MDkgVVRDIHNlZ8O6biBsYXMgbWFyY2FzIGRlbCByZXBvc2l0b3JpbyxNaXNtbyByZXBvc2l0b3Jpbwo=", 0],
+  ["E02_pslist", "E-02 · linux.pslist: procesos del servidor de base de datos. UTC.", "UElELFBQSUQsUHJvY2VzbyxVc3VhcmlvLEluaWNpbyAoVVRDKQoxLDAsc3lzdGVtZCxyb290LDIwMjUtMTAtMTkgMDY6MTI6NDAKNzIyLDEsc3NoZCxyb290LDIwMjUtMTAtMTkgMDY6MTI6NTIKODEwLDEscG9zdGdyZXMscG9zdGdyZXMsMjAyNS0xMC0xOSAwNjoxMzowNQo3NzExLDgxMCxwb3N0Z3JlczogbGlxX2FwcCBlYV9vcGVyYWNpb25lcyAxMC4yMC4xMC4xMSg1MTU0NCkgaWRsZSxwb3N0Z3JlcywyMDI1LTEyLTExIDE0OjQzOjQ1Cjc3MTIsODEwLHBvc3RncmVzOiBsaXFfYXBwIGVhX29wZXJhY2lvbmVzIDEwLjIwLjEwLjExKDUxNTUwKSBpZGxlLHBvc3RncmVzLDIwMjUtMTItMTEgMTQ6NDM6NDYKNzkwNCw3MjIsc3NoZDogZGJhX2FkbWluIFtwcml2XSxyb290LDIwMjUtMTItMTIgMTQ6MzE6MDIKNzkxMCw3OTA0LGJhc2gsZGJhX2FkbWluLDIwMjUtMTItMTIgMTQ6MzE6MDUK", 0],
+  ["E02_estadisticas_consultas", "E-02 · Estadísticas de consultas en memoria (pg_stat_statements).", "Q3VlbnRhLENvbnN1bHRhIChub3JtYWxpemFkYSksTGxhbWFkYXMsRmlsYXMsUHJpbWVyYSB2ZXogdmlzdGEsRnVlbnRlCmxpcV9hcHAsIlNFTEVDVCBjb21lcmNpb19pZCwgU1VNKHZhbG9yKSBGUk9NIHJlY2F1ZG9zIFdIRVJFIHNlbWFuYSA9ICQxIEdST1VQIEJZIGNvbWVyY2lvX2lkIiw0MTIsMTQwMDgwLDIwMjUtMTAtMTkscGdfc3RhdF9zdGF0ZW1lbnRzIGVuIG1lbW9yaWEKbGlxX2FwcCwiVVBEQVRFIGN1ZW50YXNfY29tZXJjaW8gU0VUIGN1ZW50YV9iYW5jYXJpYSA9ICQxLCBhY3R1YWxpemFkb19wb3IgPSAkMiBXSEVSRSBjb21lcmNpb19pZCA9ICQzIiwxMjQsMTI0LDIwMjUtMTAtMTkscGdfc3RhdF9zdGF0ZW1lbnRzIGVuIG1lbW9yaWEKbGlxX2FwcCwiU0VMRUNUIG5vbWJyZSwgY2VkdWxhLCB0ZWxlZm9ubywgZGlyZWNjaW9uLCBjaXVkYWQgRlJPTSBkZXN0aW5hdGFyaW9zIiwxLDQxMDExMiwyMDI1LTEyLTAyLHBnX3N0YXRfc3RhdGVtZW50cyBlbiBtZW1vcmlhCnJlcG9ydGVzLFNFTEVDVCAqIEZST00gZ3VpYXMgV0hFUkUgZmVjaGFfZW50cmVnYSBCRVRXRUVOICQxIEFORCAkMiw4OCw1MjEwNDAwLDIwMjUtMTAtMTkscGdfc3RhdF9zdGF0ZW1lbnRzIGVuIG1lbW9yaWEK", 0]
+];
+function csv(t){
+  const f = []; let r = [], c = "", q = false;
+  for (let i = 0; i < t.length; i++){
+    const ch = t[i];
+    if (q){ if (ch === '"'){ if (t[i + 1] === '"'){ c += '"'; i++; } else q = false; } else c += ch; }
+    else if (ch === '"') q = true; else if (ch === ","){ r.push(c); c = ""; }
+    else if (ch === "\n"){ r.push(c); f.push(r); r = []; c = ""; } else if (ch !== "\r") c += ch;
+  }
+  if (c !== "" || r.length){ r.push(c); f.push(r); }
+  return f;
+}
+function b64txt(s){ const t = atob(s), b = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) b[i] = t.charCodeAt(i); return new TextDecoder().decode(b); }
+const D = {};
+FUENTES.forEach(function(F){ const filas = csv(b64txt(F[2])); D[F[0]] = { desc: F[1], local: F[3], cab: filas[0], filas: filas.slice(1) }; });
+
+/* hora: local (AAAA-MM-DD HH:MM:SS) → UTC ISO */
+function aUTC(s){
+  const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(s); if (!m) return s;
+  const t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4] + 5, +m[5], +m[6]);
+  return new Date(t).toISOString().replace(".000", "");
+}
+function esHora(s){ return /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}Z?$/.test(s); }
+
+/* estado */
+const CLAVE = "sio0014-lab3";
+let est = { linea: [] }; try { est = Object.assign(est, JSON.parse(localStorage.getItem(CLAVE) || "{}")); } catch (e) {}
+function guarda(){ try { localStorage.setItem(CLAVE, JSON.stringify(est)); } catch (e) {} }
+$$("[data-k]").forEach(function(el){ if (est[el.dataset.k] != null) el.value = est[el.dataset.k]; el.addEventListener("input", function(){ est[el.dataset.k] = el.value; guarda(); }); });
+
+/* visor */
+let actual = FUENTES[0][0];
+function pintaTabs(){
+  $("tabs").innerHTML = "";
+  FUENTES.forEach(function(F){
+    const b = document.createElement("button"); b.type = "button"; b.textContent = F[0] + " (" + D[F[0]].filas.length + ")";
+    if (F[0] === actual) b.className = "sel";
+    b.addEventListener("click", function(){ actual = F[0]; pintaTabs(); pinta(); });
+    $("tabs").appendChild(b);
+  });
+}
+function esc(s){ return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function pinta(){
+  const d = D[actual], f = $("filtro").value.trim().toLowerCase(), utc = $("utc").checked;
+  $("desc").textContent = d.desc;
+  let h = "<thead><tr><th></th>" + d.cab.map(function(c, i){ return "<th>" + esc(utc && d.local && i === 0 ? "Hora UTC (convertida)" : c) + "</th>"; }).join("") + "</tr></thead><tbody>";
+  let n = 0;
+  d.filas.forEach(function(r, i){
+    if (f && r.join(" ").toLowerCase().indexOf(f) < 0) return;
+    n++;
+    h += "<tr><td><button type='button' class='add sec' data-i='" + i + "' title='A la línea de tiempo'>+</button></td>" + r.map(function(c, j){
+      const v = utc && d.local && esHora(c) ? aUTC(c) : c;
+      return "<td" + (String(c).length > 38 ? " class='w'" : "") + ">" + esc(v) + "</td>";
+    }).join("") + "</tr>";
+  });
+  $("tabla").innerHTML = h + "</tbody>";
+  $("nfilas").textContent = n + " de " + d.filas.length;
+  $$("#tabla button.add").forEach(function(b){ b.addEventListener("click", function(){ agrega(actual, +b.dataset.i); b.textContent = "✓"; }); });
+}
+$("filtro").addEventListener("input", pinta); $("utc").addEventListener("change", pinta);
+
+/* línea de tiempo */
+function primeraHora(r){ for (const c of r) if (esHora(c)) return c; return ""; }
+function agrega(fuente, i){
+  const d = D[fuente], r = d.filas[i], orig = primeraHora(r);
+  const u = !orig ? "" : (d.local ? aUTC(orig) : orig);
+  const hecho = d.cab.map(function(c, j){ return esHora(r[j]) ? null : c + ": " + r[j]; }).filter(function(x){ return x && !/: $/.test(x); }).join(" · ");
+  est.linea.push({ u: u, o: orig ? orig + (d.local ? " (local)" : " (UTC)") : "", h: hecho, f: fuente, t: "D", c: "", hip: "" });
+  guarda(); pintaLinea();
+}
+$("madd").addEventListener("click", function(){
+  const h = $("mh").value.trim(), t = $("mt").value.trim(); if (!t) return;
+  est.linea.push({ u: h, o: h, h: t, f: $("mf").value.trim() || "a mano", t: "V", c: "", hip: "" });
+  $("mh").value = $("mt").value = $("mf").value = ""; guarda(); pintaLinea();
+});
+function sel(op, v, k, i){ return "<select data-l='" + i + "' data-p='" + k + "'>" + op.map(function(o){ return "<option" + (o === v ? " selected" : "") + ">" + o + "</option>"; }).join("") + "</select>"; }
+function pintaLinea(){
+  est.linea.sort(function(a, b){ return (a.u || "9").localeCompare(b.u || "9"); });
+  const tb = $("linea").querySelector("tbody"); tb.innerHTML = "";
+  est.linea.forEach(function(e, i){
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td class='h'>" + esc(e.u || "sin hora") + "</td><td class='h'>" + esc(e.o) + "</td><td>" + esc(e.h) + "</td><td>" + esc(e.f) + "</td><td>" + sel(["D", "V", "I"], e.t, "t", i) + "</td><td>" + sel(["", "alta", "media", "baja"], e.c, "c", i) + "</td><td>" + sel(["", "H1", "H2", "no distingue"], e.hip, "hip", i) + "</td><td><button type='button' class='sec' data-x='" + i + "'>quitar</button></td>";
+    tb.appendChild(tr);
+  });
+  $$("#linea select").forEach(function(s){ s.addEventListener("change", function(){ est.linea[+s.dataset.l][s.dataset.p] = s.value; guarda(); }); });
+  $$("#linea [data-x]").forEach(function(b){ b.addEventListener("click", function(){ est.linea.splice(+b.dataset.x, 1); guarda(); pintaLinea(); }); });
+  const n = est.linea.length;
+  $("nlinea").textContent = n + " hechos en la línea" + (n < 6 ? " · faltan " + (6 - n) + " para el mínimo" : " · mínimo cumplido");
+}
+
+/* comprobaciones */
+function norm(s){ return String(s || "").toLowerCase().replace(/\s+/g, "").replace(/[^0-9a-z:.\-]/g, "").replace(/z$/, ""); }
+const OK = {
+  c1: ["2025-12-1114:43:05", "2025-12-11t14:43:05"],
+  c2a: ["4412"],
+  c2b: ["c:userspubliclibrariessvcupd.exe"],
+  c3a: ["198.51.100.200", "198.51.100.200:443"],
+  c3b: ["6", "6horas", "cada6horas"],
+  c4: ["5b1f0c27a9e4d83306c2f1b8e7a4d9f02c6e8b31"],
+  c5: ["acano", "eaacano"],
+  c6: ["124"]
+};
+const PISTA = {
+  c1: "E01_info, «Hora de arranque del sistema».",
+  c2a: "En E01_pstree, miren el hijo de WmiPrvSE.exe.",
+  c2b: "E01_cmdline, el PID del ejercicio anterior.",
+  c3a: "E01_netscan, filtren por el proceso.",
+  c3b: "Resten las horas de las conexiones cerradas.",
+  c4: "E01_dumpfiles_hash.",
+  c5: "E01_pstree: procesos de la sesión 2 (explorer, rdpclip, mmc).",
+  c6: "E02_estadisticas_consultas, la consulta UPDATE."
+};
+function comprueba(k){
+  const v = norm($(k).value), bien = OK[k].indexOf(v) >= 0;
+  const f = $("f_" + k); f.className = "fb " + (bien ? "ok" : "mal");
+  f.textContent = bien ? "Coincide con las fuentes." : (v ? "No coincide. " : "") + PISTA[k];
+  est["ok_" + k] = bien; guarda();
+}
+$$("[data-c]").forEach(function(b){ b.addEventListener("click", function(){ comprueba(b.dataset.c); }); });
+
+/* hoja para imprimir */
+function arma(){
+  const P = [["1 · Cuándo", "c1", "r1"], ["2 · El proceso", "c2a c2b", "r2"], ["3 · La red", "c3a c3b", "r3"], ["4 · El mismo archivo", "c4", "r4"], ["5 · Otra mano", "c5", "r5"], ["6 · E-02", "c6", "r6"], ["7 · Limitación", "", "r7a"], ["7 · Recomendación", "", "r7b"], ["7 · Hipótesis", "", "r7c"]];
+  let h = "<h1>Laboratorio 3 · SIO0014 · Lo que sobrevivió al reinicio</h1><p><b>Equipo:</b> " + esc($("equipo").value) + " · <b>Integrantes:</b> " + esc($("integrantes").value) + "</p>";
+  P.forEach(function(p){
+    h += "<h2>" + p[0] + "</h2>";
+    p[1].split(" ").filter(Boolean).forEach(function(k){ h += "<p class='pr'>" + esc($(k).previousElementSibling ? $(k).previousElementSibling.textContent : k) + ": " + esc($(k).value) + (est["ok_" + k] ? " ✓" : "") + "</p>"; });
+    h += "<div class='tx'>" + esc($(p[2]).value || "—") + "</div>";
+  });
+  h += "<h2>8 · Línea de tiempo (" + est.linea.length + " hechos)</h2><table><thead><tr><th>Hora UTC</th><th>Hora original</th><th>Hecho</th><th>Fuente</th><th>Tipo</th><th>Conf.</th><th>H1·H2</th></tr></thead><tbody>";
+  est.linea.forEach(function(e){ h += "<tr><td>" + esc(e.u) + "</td><td>" + esc(e.o) + "</td><td>" + esc(e.h) + "</td><td>" + esc(e.f) + "</td><td>" + esc(e.t) + "</td><td>" + esc(e.c) + "</td><td>" + esc(e.hip) + "</td></tr>"; });
+  $("hoja").innerHTML = h + "</tbody></table>";
+}
+window.addEventListener("beforeprint", arma);
+$("imprimir").addEventListener("click", function(){ arma(); window.print(); });
+$("borrar").addEventListener("click", function(){ if (confirm("¿Borrar todo el avance guardado de este laboratorio en este navegador?")){ try { localStorage.removeItem(CLAVE); } catch (e) {} location.reload(); } });
+
+pintaTabs(); pinta(); pintaLinea();
+Object.keys(OK).forEach(function(k){ if (est["ok_" + k]) { $("f_" + k).className = "fb ok"; $("f_" + k).textContent = "Coincide con las fuentes."; } });
+$("estado").textContent = "Listo: " + FUENTES.length + " fuentes, " + FUENTES.reduce(function(a, F){ return a + D[F[0]].filas.length; }, 0) + " filas. Nada sale de este equipo.";
+</script>
+
+</body>
+</html>

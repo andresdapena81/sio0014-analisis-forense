@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIO0014 · Análisis Forense</title>
+<style>
+:root{--naranja:#F36406;--azul:#154361;--tinta:#15171C;--tinta-2:#4A505C;--gris:#5C5C5C;--papel:#fff;--papel-2:#F4F4F4;--linea:#D8DBDF;--mono:"Consolas","Cascadia Mono",ui-monospace,monospace;--sans:Arial,Helvetica,sans-serif;--titular:"Arial Black",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel-2);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.55}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px 80px;background:var(--papel);min-height:100vh}
+header{padding:30px 0 0}
+.regla{height:5px;background:var(--tinta);margin:14px 0 12px}
+.kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+h1{font-family:var(--titular);font-size:34px;line-height:1.1;margin:8px 0 12px}
+h2{font-family:var(--titular);font-size:20px;margin:36px 0 10px;border-top:3px solid var(--tinta);padding-top:10px}
+.lead{font-size:16px;color:var(--tinta-2);max-width:70ch}
+a{color:var(--azul)}
+.labs{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.lab{display:block;border:1px solid var(--linea);border-left:5px solid var(--naranja);padding:14px 16px;text-decoration:none;color:var(--tinta);background:var(--papel)}
+.lab:hover{background:#FDEFE9}
+.lab .n{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gris)}
+.lab .t{font-weight:700;font-size:16px;margin:4px 0}
+.lab .s{font-size:13px;color:var(--tinta-2)}
+ul{padding-left:20px}
+footer{margin-top:40px;font-size:12px;color:var(--gris)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="kicker">IUE · Facultad de Ingeniería · Especialización en Seguridad de la Información</div>
+<div class="regla"></div>
+<h1>SIO0014 · Análisis Forense en Sistemas de Información</h1>
+<p class="lead">Material del módulo, construido sobre el caso Enlace Andino: una empresa ficticia de mensajería y recaudo contra entrega. Los laboratorios funcionan en el navegador, sin conexión, y no envían datos a ningún servidor.</p>
+</header>
+
+<h2>Laboratorios</h2>
+<div class="labs">
+<a class="lab" href="laboratorios/Practica-resumenes-SIO0014.html"><div class="n">Sesión 2 · Práctica</div><div class="t">¿Qué cambia un resumen?</div><div class="s">Resúmenes criptográficos y verificación</div></a>
+<a class="lab" href="laboratorios/Laboratorio-1-SIO0014.html"><div class="n">Sesión 2 · Laboratorio 1</div><div class="t">Verificar antes de creer</div><div class="s">Adquisición y cadena de custodia</div></a>
+<a class="lab" href="laboratorios/Laboratorio-2-SIO0014.html"><div class="n">Sesión 3 · Laboratorio 2</div><div class="t">Del artefacto a la línea de tiempo</div><div class="s">Evidencia en la carpeta evidencia/sesion-3</div></a>
+<a class="lab" href="laboratorios/Laboratorio-3-SIO0014.html"><div class="n">Sesión 5 · Laboratorio 3</div><div class="t">Lo que sobrevivió al reinicio</div><div class="s">Análisis de memoria</div></a>
+<a class="lab" href="laboratorios/Laboratorio%204%20-%20Practica%20con%20Autopsy%20-%20SIO0014.pdf"><div class="n">Sesión 5 · Laboratorio 4 · PDF</div><div class="t">El teléfono del repartidor</div><div class="s">Práctica con Autopsy</div></a>
+<a class="lab" href="laboratorios/Laboratorio-5-SIO0014.html"><div class="n">Sesión 5 · Laboratorio 5</div><div class="t">La llave que estaba en la imagen</div><div class="s">Nube y contenedores</div></a>
+</div>
+
+<h2>Material</h2>
+<ul>
+<li><a href="https://github.com/andresdapena81/sio0014-analisis-forense/tree/main/caso">Caso Enlace Andino</a>: partes A y B</li>
+<li><a href="https://github.com/andresdapena81/sio0014-analisis-forense/tree/main/guias">Guías</a>: método forense, adquisición en la práctica, entregas 1 y 2</li>
+<li><a href="https://github.com/andresdapena81/sio0014-analisis-forense/tree/main/actividades">Actividades</a> de las sesiones</li>
+<li><a href="https://github.com/andresdapena81/sio0014-analisis-forense/tree/main/presentaciones">Presentaciones</a> de las sesiones 1 a 5</li>
+<li><a href="https://github.com/andresdapena81/sio0014-analisis-forense/tree/main/evidencia">Evidencia</a>, con sus resúmenes SHA-256</li>
+<li><a href="retos/data-leakage/Reto%20-%20Data%20Leakage%20Case%20NIST%20-%20SIO0014.pdf">Reto voluntario: Data Leakage Case del NIST</a>, un Windows en Autopsy</li>
+</ul>
+
+<footer>Institución Universitaria de Envigado · Facultad de Ingeniería · Autor: Jorge Andrés Dapena Ossa · Licencia CC BY-SA 4.0. El caso es ficticio.</footer>
+</div>
+</body>
+</html>

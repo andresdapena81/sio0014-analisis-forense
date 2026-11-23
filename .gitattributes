@@ -1,0 +1,5 @@
+# La evidencia no se toca: sin conversión de finales de línea, para que los SHA-256 coincidan
+evidencia/** binary
+retos/** binary
+*.pdf binary
+*.pptx binary

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica de resúmenes · SIO0014 Análisis forense</title>
+<style>
+/* Hoja común de los laboratorios de SIO0010. Misma identidad del laboratorio 1.
+   Al final está la hoja de impresión: el PDF de cada laboratorio sale de este mismo archivo. */
+:root{
+  --naranja:#F36406; --naranja-lav:#FDEFE9; --azul:#154361; --azul-lav:#E9F0F5;
+  --tinta:#15171C; --tinta-2:#4A505C; --gris:#5C5C5C; --papel:#FFFFFF; --papel-2:#F4F4F4;
+  --linea:#D8DBDF; --linea-suave:#E9EBEE; --verde:#1B6B47; --verde-lav:#E1F0E8;
+  --rojo:#A8321B; --rojo-lav:#FBEAE6;
+  --mono:"Consolas","Cascadia Mono",ui-monospace,monospace;
+  --sans:Arial,Helvetica,sans-serif; --titular:"Arial Black",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel-2);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px 80px;background:var(--papel)}
+header.top{padding:26px 0 0}
+.marca{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.marca img{height:40px;width:auto}
+.regla{height:5px;background:var(--tinta);margin:0 0 12px}
+.kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--gris)}
+h1{font-family:var(--titular);font-size:38px;line-height:1.1;margin:8px 0 14px;letter-spacing:-.01em}
+.lead{font-size:16px;color:var(--tinta-2);max-width:78ch}
+.aviso{border-left:4px solid var(--naranja);background:var(--naranja-lav);padding:12px 16px;margin:18px 0}
+.aviso b{color:var(--tinta)}
+.adv{border-left:4px solid var(--rojo);background:var(--rojo-lav);padding:12px 16px;margin:16px 0;font-size:14.5px;color:var(--tinta-2)}
+.adv b{color:var(--rojo)}
+section{margin-top:44px;scroll-margin-top:16px}
+.sec-h{border-top:4px solid var(--tinta);padding-top:10px;margin-bottom:16px}
+.sec-n{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--naranja)}
+h2{font-family:var(--titular);font-size:25px;margin:6px 0 0;letter-spacing:-.01em}
+h3{font-size:16px;margin:22px 0 8px}
+.nav{position:sticky;top:0;background:var(--papel);border-bottom:1px solid var(--linea);padding:10px 0;z-index:9;display:flex;gap:6px;flex-wrap:wrap}
+.nav a{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--gris);border:1px solid var(--linea);padding:5px 9px;border-radius:2px}
+.nav a:hover{color:var(--naranja);border-color:var(--naranja)}
+.panel{border:1px solid var(--linea);border-radius:3px;padding:16px;margin:14px 0;background:var(--papel)}
+.et{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--azul);margin-bottom:7px}
+textarea,input[type=text],input[type=number],select{width:100%;font-family:var(--mono);font-size:13px;padding:9px 11px;border:1px solid var(--linea);border-radius:2px;background:var(--papel);color:var(--tinta);resize:vertical}
+textarea{min-height:72px}
+.fila{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.fila label{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);font-weight:700}
+button{font-family:var(--sans);font-size:13px;font-weight:700;padding:8px 15px;border:1px solid var(--tinta);background:var(--tinta);color:#fff;border-radius:2px;cursor:pointer}
+button:hover{background:var(--naranja);border-color:var(--naranja)}
+button.sec{background:transparent;color:var(--tinta)}
+button.sec:hover{color:var(--naranja)}
+button:disabled{opacity:.45;cursor:default}
+input[type=range]{flex:1;min-width:190px;accent-color:var(--naranja)}
+.sal{font-family:var(--mono);font-size:13px;background:var(--papel-2);border:1px solid var(--linea-suave);border-radius:2px;padding:11px 13px;white-space:pre-wrap;word-break:break-word;min-height:42px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.dos,.tres{grid-template-columns:1fr}}
+.imgs{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:8px}
+.imgs figure{margin:0;text-align:center}
+.imgs img{width:230px;height:230px;image-rendering:pixelated;border:1px solid var(--linea)}
+.imgs figcaption{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-top:8px;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:8px}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--azul);padding:7px 9px;font-weight:700}
+td{padding:6px 9px;border-bottom:1px solid var(--linea-suave);color:var(--tinta-2);vertical-align:top}
+td b{color:var(--tinta)}
+.leyenda{font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-top:14px;line-height:1.7}
+.ok{color:var(--verde);font-weight:700}
+.mal{color:var(--naranja);font-weight:700}
+.rojo{color:var(--rojo);font-weight:700}
+details{border:1px solid var(--linea);border-radius:2px;padding:10px 14px;margin-top:12px;background:var(--papel-2)}
+summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--azul)}
+details p{margin:9px 0 0;font-size:14px;color:var(--tinta-2)}
+details p:first-of-type{margin-top:10px}
+
+/* bloque de comandos con botón de copiar */
+.cmd{position:relative;background:#15171C;border-radius:3px;padding:13px 15px;margin:11px 0;overflow-x:auto}
+.cmd pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#E8EAED;white-space:pre}
+.cmd .c{color:#8A9199}
+.cmd .n{color:#F0A26A}
+.cmd .copiar{position:absolute;top:8px;right:8px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;background:transparent;color:#8A9199;border:1px solid #3A3F47}
+.cmd .copiar:hover{color:#fff;background:transparent;border-color:#8A9199}
+.cmd-t{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--azul);margin:16px 0 -4px}
+
+/* pasos numerados */
+ol.pasos{margin:12px 0 0;padding:0;list-style:none;counter-reset:pp}
+ol.pasos li{counter-increment:pp;display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--linea-suave)}
+ol.pasos li:last-child{border-bottom:0}
+ol.pasos li::before{content:counter(pp);flex:0 0 22px;height:22px;border-radius:50%;background:var(--azul);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+ol.pasos li b{display:block;color:var(--tinta)}
+ol.pasos li span{font-size:14.5px;color:var(--tinta-2)}
+
+/* tarjetas */
+.tarj{border:1px solid var(--linea);border-radius:3px;padding:13px 15px;background:var(--papel)}
+.tarj.fill{background:var(--papel-2)}
+.tarj.az{background:var(--azul-lav);border-color:#C6D5E0}
+.tarj.na{background:var(--naranja-lav);border-color:#F5CFBF}
+.tarj h4{margin:0 0 5px;font-size:14px}
+.tarj p{margin:0;font-size:13.5px;color:var(--tinta-2)}
+
+/* entregable */
+.ent{border:2px solid var(--tinta);border-radius:3px;padding:15px 17px;margin-top:16px}
+.ent .et{color:var(--naranja)}
+.ent ul{margin:8px 0 0;padding-left:19px;font-size:14.5px;color:var(--tinta-2)}
+.ent li{margin-bottom:5px}
+
+/* casillas de verificación */
+ul.chk{margin:10px 0 0;padding:0;list-style:none}
+ul.chk li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--linea-suave);font-size:14.5px;color:var(--tinta-2)}
+ul.chk li:last-child{border-bottom:0}
+ul.chk li::before{content:"";flex:0 0 13px;height:13px;border:1.5px solid var(--azul);border-radius:2px;margin-top:4px}
+
+/* repaso */
+.preg{border:1px solid var(--linea);border-radius:3px;padding:13px 15px;margin-bottom:9px}
+.preg .q{font-weight:700;margin-bottom:8px}
+.preg .ops{display:flex;gap:7px;flex-wrap:wrap}
+.preg .ops button{font-size:12px;padding:6px 11px;background:transparent;color:var(--tinta);border-color:var(--linea)}
+.preg .ops button.elegida{background:var(--azul);color:#fff;border-color:var(--azul)}
+.preg .fb{margin-top:9px;font-size:13.5px;display:none}
+
+footer{margin-top:54px;border-top:1px solid var(--linea);padding-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+/* ───────────────────────── impresión ─────────────────────────
+   El PDF de cada laboratorio se genera de este mismo archivo. */
+@media print{
+  @page{ size:A4; margin:15mm 14mm 14mm }
+  body{background:#fff;font-size:10.2pt;line-height:1.45}
+  .wrap{max-width:none;padding:0;background:#fff}
+  .nav{display:none}
+  button,input[type=range],.copiar{display:none!important}
+  h1{font-size:25pt}
+  h2{font-size:15pt}
+  h3{font-size:11.5pt}
+  .lead{font-size:10.6pt;max-width:none}
+  section{margin-top:18pt;page-break-inside:auto}
+  .sec-h{page-break-after:avoid}
+  .panel,.tarj,.ent,.preg,.adv,.aviso,details,.cmd{page-break-inside:avoid}
+  .cmd{background:#F4F4F4;border:.7pt solid var(--linea)}
+  .cmd pre{color:#15171C;font-size:8.6pt}
+  .cmd .c{color:#6A7078}
+  .cmd .n{color:#A8321B}
+  .sal{min-height:0;font-size:8.6pt}
+  .inter .sal{display:none}
+  .inter::after{content:"Panel interactivo · ábralo en el navegador para ejecutarlo";display:block;font-family:var(--mono);font-size:8.4pt;letter-spacing:.06em;color:var(--gris);border-top:.7pt solid var(--linea-suave);margin-top:8px;padding-top:7px}
+  details{background:#fff}
+  details summary{list-style:none;color:var(--azul)}
+  details summary::-webkit-details-marker{display:none}
+  table{font-size:9pt}
+  th{padding:5px 7px;font-size:7.4pt}
+  td{padding:4.5px 7px}
+  .imgs img{width:150px;height:150px}
+  footer{margin-top:20pt;font-size:8pt}
+  a{color:inherit;text-decoration:none}
+}
+
+</style>
+</head>
+<body>
+<script>
+/* Utilidades comunes de los laboratorios (heredadas de SIO0010, usadas también en SIO0013 y SIO0014).
+   Todo ocurre en el navegador: no hay peticiones de red. Cada laboratorio guarda su avance en el almacenamiento local. */
+
+const $  = id => document.getElementById(id);
+const $$ = sel => Array.prototype.slice.call(document.querySelectorAll(sel));
+
+/* ---------- bytes, hexadecimal y texto ---------- */
+const UTF8 = new TextEncoder();
+const DEC  = new TextDecoder();
+
+function bytes(txt){ return UTF8.encode(txt); }
+function texto(buf){ return DEC.decode(buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf); }
+function hex(buf){
+  const b = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+  return Array.prototype.map.call(b, v => v.toString(16).padStart(2, "0")).join("");
+}
+function desdeHex(s){
+  s = (s || "").replace(/[^0-9a-fA-F]/g, "");
+  const b = new Uint8Array(s.length >> 1);
+  for (let i = 0; i < b.length; i++) b[i] = parseInt(s.substr(i * 2, 2), 16);
+  return b;
+}
+function aleatorio(n){ const b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
+function bloques(h, n){ return (h.match(new RegExp(".{1," + (n * 2) + "}", "g")) || []).join(" "); }
+
+/* ---------- copiar bloques de comandos ---------- */
+function montarCopias(){
+  $$(".cmd").forEach(function(caja){
+    if (caja.querySelector(".copiar")) return;
+    const b = document.createElement("button");
+    b.className = "copiar"; b.type = "button"; b.textContent = "copiar";
+    b.addEventListener("click", function(){
+      const t = caja.querySelector("pre").innerText;
+      const listo = function(){ b.textContent = "copiado"; setTimeout(function(){ b.textContent = "copiar"; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(listo, function(){ manual(t, listo); });
+      } else { manual(t, listo); }
+    });
+    caja.appendChild(b);
+  });
+  function manual(t, listo){          // sin permiso de portapapeles: selección manual
+    const a = document.createElement("textarea");
+    a.value = t; a.style.position = "fixed"; a.style.opacity = "0";
+    document.body.appendChild(a); a.select();
+    try { document.execCommand("copy"); listo(); } catch (e) {}
+    document.body.removeChild(a);
+  }
+}
+
+/* ---------- repaso de opción múltiple ----------
+   preguntas: [[enunciado, respuesta, explicación], ...]   ·   opciones: ["A", "B", ...] */
+function montarQuiz(cont, preguntas, opciones, idVer, idReset, idMarca){
+  const caja = $(cont);
+  const elegido = {};
+
+  function pinta(){
+    caja.innerHTML = "";
+    preguntas.forEach(function(p, i){
+      const d = document.createElement("div"); d.className = "preg";
+      const q = document.createElement("div"); q.className = "q"; q.textContent = (i + 1) + ". " + p[0];
+      const ops = document.createElement("div"); ops.className = "ops";
+      opciones.forEach(function(o){
+        const b = document.createElement("button"); b.type = "button"; b.textContent = o;
+        if (elegido[i] === o) b.className = "elegida";
+        b.addEventListener("click", function(){ elegido[i] = o; pinta(); marca(); });
+        ops.appendChild(b);
+      });
+      const fb = document.createElement("div"); fb.className = "fb"; fb.id = cont + "-fb" + i;
+      d.appendChild(q); d.appendChild(ops); d.appendChild(fb);
+      caja.appendChild(d);
+    });
+  }
+  function marca(){
+    const n = Object.keys(elegido).length;
+    if (idMarca) $(idMarca).textContent = n ? n + " de " + preguntas.length + " respondidas" : "";
+  }
+  function ver(){
+    preguntas.forEach(function(p, i){
+      const fb = $(cont + "-fb" + i);
+      const bien = elegido[i] === p[1];
+      fb.style.display = "block";
+      fb.innerHTML = '<span class="' + (bien ? "ok" : "mal") + '">' + (bien ? "Correcto" : "Respuesta: " + p[1]) +
+                     '</span> · <span style="color:var(--tinta-2)">' + p[2] + "</span>";
+    });
+  }
+  function reinicia(){ for (const k in elegido) delete elegido[k]; pinta(); marca(); }
+
+  if (idVer)   $(idVer).addEventListener("click", ver);
+  if (idReset) $(idReset).addEventListener("click", reinicia);
+  pinta();
+}
+
+/* ---------- cronómetro ---------- */
+async function cronometra(fn){
+  const t = performance.now();
+  const r = await fn();
+  return { ms: performance.now() - t, r: r };
+}
+function ms(v){ return v >= 1000 ? (v / 1000).toFixed(2) + " s" : v.toFixed(1) + " ms"; }
+
+/* ---------- impresión: los desplegables salen abiertos ---------- */
+function abreTodo(){ $$("details").forEach(function(d){ d.open = true; }); }
+window.addEventListener("beforeprint", abreTodo);
+if (window.matchMedia) {
+  const mq = window.matchMedia("print");
+  if (mq.addEventListener) mq.addEventListener("change", function(e){ if (e.matches) abreTodo(); });
+}
+
+document.addEventListener("DOMContentLoaded", montarCopias);
+
+</script>
+<style>
+section,#dif3{scroll-margin-top:70px}
+code{font-family:var(--mono);font-size:.92em;background:var(--papel-2);padding:1px 4px;border-radius:2px}
+.scroll{overflow-x:auto}
+.hash{font-family:var(--mono);font-size:12.5px;overflow-wrap:anywhere;word-break:break-all;color:var(--tinta)}
+.lab.pide{display:block;font-family:var(--sans);font-size:14.5px;color:var(--tinta);font-weight:600;line-height:1.4;margin:14px 0 6px}
+textarea.resp{font-family:var(--sans);font-size:14px;min-height:74px;width:100%}
+.dif{background:#F9C9A8;color:var(--tinta);font-weight:700}
+.igual{color:var(--verde);font-weight:700}
+.distinto{color:var(--rojo);font-weight:700}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:2px;color:#fff;background:var(--gris)}
+.chip.v{background:var(--verde)}.chip.r{background:var(--rojo)}.chip.a{background:var(--azul)}.chip.n{background:var(--naranja)}
+.xml{font-family:var(--mono);font-size:11.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all;background:var(--papel-2);border:1px solid var(--linea-suave);padding:8px;margin:4px 0 0;max-height:340px;overflow:auto}
+.xml .m{background:#F9C9A8;display:block}
+.dos2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media(max-width:900px){.dos2{grid-template-columns:minmax(0,1fr)}}
+.caso{border:1px solid var(--linea);border-left:4px solid var(--naranja);padding:10px 14px;margin:10px 0;background:var(--papel)}
+.caso h4{margin:0 0 4px;font-size:15px}
+.caso .src{font-size:12px;color:var(--gris);margin-top:4px}
+.caso .lec{margin-top:4px}
+td.c{font-family:var(--mono);font-size:12.5px;overflow-wrap:anywhere}
+select.pred{min-width:120px}
+#soltar{border:2px dashed var(--linea);border-radius:3px;padding:14px;text-align:center;color:var(--tinta-2);font-size:14px}
+#soltar.sobre{border-color:var(--naranja);background:var(--naranja-lav)}
+</style>
+<div class="wrap">
+<header class="top">
+  <div class="marca"><img src="data:image/png;base64,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" alt="Institución Universitaria de Envigado"></div>
+  <div class="regla"></div>
+  <div class="kicker">SIO0014 · Análisis forense · Práctica de resúmenes · Sesión 2 · Bloque A · 20 minutos</div>
+  <h1>¿Qué cambia un resumen?</h1>
+  <p class="lead">Un resumen criptográfico (hash) cambia si cambia <b>un solo bit</b> de lo que se resume, y no cambia por nada más. Suena simple, y es donde se caen muchos dictámenes: el perito calcula sobre una cosa, luego alguien recalcula sobre «la misma» y no coincide. Esta práctica busca, con archivos reales, qué altera un resumen y qué no. Primero predicen; después calculan.</p>
+  <div class="aviso" style="border-left-color:var(--azul);background:var(--azul-lav)"><b>Qué hace este archivo.</b> Funciona sin conexión y sin instalar nada. Los archivos de prueba vienen adentro y todo se calcula en su navegador (SHA-256 y SHA-1 con WebCrypto; MD5 con una función incluida). Nada sale de su equipo. No tiene nota propia: lo que concluyan aquí lo usan en el ejercicio 5 del Laboratorio 1.</div>
+  <div class="barra" style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px"><label class="lab" for="equipo">Equipo</label><input type="text" id="equipo" data-k="equipo" style="width:100%" autocomplete="off"></div>
+  </div>
+</header>
+
+<nav class="nav noimp">
+  <a href="#p1">1 · Un carácter</a>
+  <a href="#p2">2 · Se ven iguales</a>
+  <a href="#p3">3 · El dictamen que se cayó</a>
+  <a href="#p4">4 · Con el sistema</a>
+  <a href="#p5">5 · Qué lo altera</a>
+  <a href="#p6">6 · Casos reales</a>
+  <a href="#p7">7 · Herramientas</a>
+</nav>
+
+<section>
+  <div class="sec-h"><div class="sec-n">Ritmo · 20 minutos · por parejas o equipos</div><h2>Cómo se reparte el tiempo</h2></div>
+  <div class="scroll"><table>
+    <thead><tr><th>Tramo</th><th class="num">Min</th><th>Qué queda escrito</th></tr></thead>
+    <tbody>
+      <tr><td><b>1 · Un carácter</b></td><td class="num">3</td><td>Predicción y cuántos dígitos cambiaron</td></tr>
+      <tr><td><b>2 · Se ven iguales</b></td><td class="num">6</td><td>Predicción por archivo y una explicación</td></tr>
+      <tr><td><b>3 · El dictamen que se cayó</b></td><td class="num">9</td><td>Qué cambió adentro del Excel, quién lo «tecleó» y cómo se escribe</td></tr>
+      <tr><td><b>4 · Comprobarlo con el sistema</b></td><td class="num">2</td><td>Mismo resumen con otra herramienta</td></tr>
+      <tr><td>Las secciones 5, 6 y 7 son de lectura y el docente las proyecta</td><td class="num">—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="p1">
+  <div class="sec-h"><div class="sec-n">Ejercicio 1 · 3 minutos</div><h2>Un carácter</h2></div>
+  <label class="lab pide" for="pr1">Antes de escribir nada abajo: si cambian una sola letra del texto, ¿cuántos de los 64 dígitos del SHA-256 creen que cambian? ¿Unos pocos, la mitad, todos?</label>
+  <input type="text" id="pr1" data-k="pr1" autocomplete="off" style="width:100%">
+  <div class="dos2" style="margin-top:10px">
+    <div><label class="lab" for="t1">Texto A</label><input type="text" id="t1" value="Enlace Andino liquida a 340 comercios cada viernes." style="width:100%"></div>
+    <div><label class="lab" for="t2">Texto B · cámbienle algo: una letra, una tilde, un espacio al final</label><input type="text" id="t2" value="Enlace Andino liquida a 340 comercios cada viernes." style="width:100%"></div>
+  </div>
+  <div class="scroll"><table style="margin-top:10px">
+    <thead><tr><th style="width:90px">Algoritmo</th><th>Texto A</th><th>Texto B</th></tr></thead>
+    <tbody>
+      <tr><td><b>MD5</b></td><td class="hash" id="a_md5"></td><td class="hash" id="b_md5"></td></tr>
+      <tr><td><b>SHA-1</b></td><td class="hash" id="a_sha1"></td><td class="hash" id="b_sha1"></td></tr>
+      <tr><td><b>SHA-256</b></td><td class="hash" id="a_sha256"></td><td class="hash" id="b_sha256"></td></tr>
+    </tbody>
+  </table></div>
+  <div class="leyenda" id="cuenta1" role="status"></div>
+  <details><summary>Lo que hay que ver</summary><p>Con cualquier cambio, cerca de la mitad de los bits del resultado cambian y casi todos los dígitos hexadecimales son otros. Es el efecto avalancha. Por eso un resumen no dice <i>cuánto</i> cambió algo, ni <i>dónde</i>: solo que cambió. Para saber dónde hay que comparar los bytes, como en el ejercicio 3 del Laboratorio 1.</p><p>Fíjense también en el texto «invisible»: un espacio al final o una tilde escrita de otra forma producen otro resumen aunque en pantalla se vea igual.</p></details>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="p2">
+  <div class="sec-h"><div class="sec-n">Ejercicio 2 · 6 minutos</div><h2>Seis archivos que se ven iguales</h2></div>
+  <p class="lead">Las tarifas de cuatro comercios en un archivo de texto (CSV). Abiertos en un editor, <b>los seis muestran exactamente lo mismo en un editor que detecta la codificación</b>. Predigan cuáles tienen el mismo resumen que <code>tarifas_A_original.csv</code>, y solo después calculen.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Archivo</th><th class="num">Bytes</th><th>Su predicción frente a A</th><th>SHA-256</th><th>¿Igual a A?</th><th>Primer byte distinto</th></tr></thead>
+    <tbody id="tcsv"></tbody>
+  </table></div>
+  <div class="fila" style="margin-top:8px"><button type="button" id="go2">Calcular los seis</button> <button type="button" class="sec" id="ver2">Ver lo que muestra un editor</button></div>
+  <pre class="xml" id="vista2" style="display:none"></pre>
+  <label class="lab pide" for="r2">¿Qué tienen en común los que cambiaron? ¿Y por qué no cambió el que tiene otro nombre? Piensen en qué pasa con un archivo cuando viaja por correo, por un repositorio o por un sistema de otro país.</label>
+  <textarea class="resp" id="r2" data-k="r2"></textarea>
+  <details><summary>Lo que hay que ver</summary>
+  <ul>
+    <li><b>B</b>: fin de línea de Windows (dos bytes, <code>0D 0A</code>) en lugar del de Linux (<code>0A</code>). Lo cambian solos muchos programas de correo, de transferencia y de control de versiones.</li>
+    <li><b>C</b>: tres bytes invisibles al inicio (<code>EF BB BF</code>, la marca de orden de bytes que agregan algunos editores al «guardar como UTF-8»).</li>
+    <li><b>D</b>: un espacio al final de una línea.</li>
+    <li><b>E</b>: el mismo texto en otra codificación (Latin-1): la «í», la «é», la «ü» y la «Ñ» se guardan con otros bytes.</li>
+    <li><b>copia_final_REVISADA.csv</b>: mismos bytes, otro nombre. El nombre, la carpeta y las fechas del sistema de archivos <b>no</b> están dentro del archivo, así que no entran en su resumen. Lo que sí cambiaría es el resumen de la imagen del disco que lo contiene.</li>
+  </ul></details>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="p3">
+  <div class="sec-h"><div class="sec-n">Ejercicio 3 · 9 minutos · un caso de la práctica</div><h2>El dictamen que se cayó</h2></div>
+  <div class="caso">
+    <h4>Lo que pasó</h4>
+    <p>Un perito de parte recibió libros de Excel de liquidación. Calculó su SHA-256 y lo puso en el dictamen. Esos libros tenían <b>vínculos externos</b>: la columna de tarifas se alimentaba de un libro maestro en un SharePoint de la empresa. Meses después, la contraparte recibió el archivo aportado al proceso, calculó el resumen y <b>no coincidió con el del dictamen</b>. El perito no supo explicar por qué, y el dictamen perdió su soporte.</p>
+    <p class="src">Hecho real de la práctica del docente, contado sin nombres. Los archivos de abajo lo reproducen con los datos ficticios del caso Enlace Andino; la dirección del SharePoint es de documentación (<code>example.com</code>).</p>
+  </div>
+  <div class="dato" style="border:1px solid var(--linea);border-left:4px solid var(--azul);background:var(--azul-lav);padding:10px 14px;margin:10px 0">
+    <b>Lo que dice el dictamen:</b> «Tarifas_liquidacion.xlsx · SHA-256 <span class="hash" id="hdict"></span>».
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>Archivo</th><th>Qué es</th><th class="num">Bytes</th><th>SHA-256</th><th>¿Igual al del dictamen?</th></tr></thead>
+    <tbody id="txlsx"></tbody>
+  </table></div>
+  <div class="fila" style="margin-top:8px"><button type="button" id="go3">Calcular los tres</button> <button type="button" class="sec" id="zip3" disabled>Abrir los dos libros por dentro</button></div>
+  <div id="partes3"></div>
+  <div id="dif3"></div>
+  <label class="lab pide" for="r3a">1. ¿Qué cambió dentro del libro aportado? ¿Alguien tecleó algo en la hoja?</label>
+  <textarea class="resp" id="r3a" data-k="r3a"></textarea>
+  <label class="lab pide" for="r3b">2. ¿Prueba esto que alguien manipuló el archivo? ¿Qué sí puede afirmar el contraperito, y qué no?</label>
+  <textarea class="resp" id="r3b" data-k="r3b"></textarea>
+  <label class="lab pide" for="r3c">3. ¿Qué debió hacer el primer perito para que su resumen se sostuviera? Al menos tres cosas, en orden.</label>
+  <textarea class="resp" id="r3c" data-k="r3c"></textarea>
+  <details><summary>Lo que hay que ver</summary>
+  <ul>
+    <li>Un <code>.xlsx</code> es un ZIP con archivos XML adentro. Cambió el contenido de tres partes (al guardar, Excel además reescribe el ZIP entero): <code>docProps/core.xml</code> (qué cuenta guardó y cuándo, el 17 de febrero de 2026: es una cuenta, no una persona), <code>xl/externalLinks/externalLink1.xml</code> (la copia en caché de las tarifas del libro maestro) y <code>xl/worksheets/sheet1.xml</code> (los valores calculados). Nadie tecleó: alguien <b>abrió el libro, Excel actualizó los vínculos con el SharePoint y se guardó</b>, a mano o por autoguardado. Y lo grave: <b>cambiaron cifras visibles</b> (dos tarifas y sus totales).</li>
+    <li>La copia «vista protegida» se abrió sin guardar: <b>abrir no cambia los bytes; guardar, sí</b>. Por eso su resumen sigue igual al del dictamen.</li>
+    <li>El contraperito no puede afirmar manipulación de mala fe. Sí puede afirmar que el archivo aportado no es el que se resumió, qué partes cambiaron, y que el cambio es compatible con una actualización de vínculos y un guardado posterior a la fecha del dictamen.</li>
+    <li>Lo que debió hacerse: resumir <b>al adquirir</b>, antes de abrir nada; guardar el original en un medio de solo lectura y en custodia; trabajar siempre sobre una copia; abrir esa copia sin actualizar vínculos y sin autoguardado (o no abrirla en Excel: leer el XML); declarar en el dictamen que el libro tiene vínculos externos y que su contenido visible depende de otra fuente; preservar también esa fuente (el libro maestro y su historial de versiones en SharePoint); y aportar al proceso exactamente el archivo resumido, con su cadena de custodia.</li>
+  </ul></details>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="p4">
+  <div class="sec-h"><div class="sec-n">Ejercicio 4 · 2 minutos · opcional si el tiempo no da</div><h2>Comprobarlo con el sistema</h2></div>
+  <p>Un perito no confía en una sola herramienta. Descarguen un archivo de esta práctica, calculen su resumen con el sistema operativo y compárenlo con el de esta página.</p>
+  <div class="fila" id="desc4"></div>
+  <div class="cmd"><pre>Get-FileHash .\tarifas_A_original.csv -Algorithm SHA256</pre></div><div class="cmd-t">Windows · PowerShell</div>
+  <div class="cmd"><pre>certutil -hashfile tarifas_A_original.csv SHA256</pre></div><div class="cmd-t">Windows · símbolo del sistema</div>
+  <div class="cmd"><pre>shasum -a 256 tarifas_A_original.csv</pre></div><div class="cmd-t">macOS</div>
+  <div class="cmd"><pre>sha256sum tarifas_A_original.csv</pre></div><div class="cmd-t">Linux</div>
+  <p style="margin-top:10px">Y con un archivo propio: suéltenlo aquí. Se resume en su navegador y no se sube a ninguna parte. Luego cámbienle el nombre, vuelvan a soltarlo y comparen.</p>
+  <div id="soltar">Suelten un archivo aquí, o elíjanlo: <input type="file" id="propio"></div>
+  <div class="scroll"><table style="margin-top:8px"><thead><tr><th>Nombre</th><th class="num">Bytes</th><th>Fecha de modificación (del sistema de archivos)</th><th>SHA-256</th></tr></thead><tbody id="tpropio"></tbody></table></div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="p5">
+  <div class="sec-h"><div class="sec-n">Para leer y proyectar</div><h2>Qué altera un resumen, y qué no</h2></div>
+  <div class="scroll"><table>
+    <thead><tr><th style="width:50%">Cambia el resumen del archivo</th><th>No cambia el resumen del archivo</th></tr></thead>
+    <tbody>
+      <tr><td>Cualquier bit del contenido, aunque no se vea: un espacio, un fin de línea, una codificación, una marca invisible</td><td>El nombre, la extensión y la carpeta</td></tr>
+      <tr><td>Abrir y <b>guardar</b> un documento de oficina, aunque no se cambie nada: se reescriben autor, fecha, valores en caché y el ZIP entero</td><td>Las fechas de creación, modificación y acceso del sistema de archivos, y los permisos</td></tr>
+      <tr><td>Autoguardado y sincronización (OneDrive, SharePoint, Google Drive): el archivo «vivo» cambia sin que nadie lo decida</td><td>Copiarlo a otro disco o a otra máquina, si la copia es fiel</td></tr>
+      <tr><td>Vínculos externos, macros y campos que se actualizan solos al abrir (fechas automáticas, consultas, vínculos a otro libro)</td><td>Comprimirlo y descomprimirlo sin pérdida: el archivo extraído tiene el mismo resumen (el ZIP, otro)</td></tr>
+      <tr><td>Descargarlo de una plataforma que reescribe propiedades del documento al entregarlo (algunas bibliotecas documentales lo hacen con sus columnas de metadatos)</td><td>Abrirlo en modo de solo lectura o en vista protegida, <b>sin guardar</b></td></tr>
+      <tr><td>Antivirus que «limpia», convertidores de formato, programas de correo que recodifican adjuntos</td><td>Enviarlo como adjunto intacto, si quien lo recibe lo guarda sin modificar</td></tr>
+    </tbody>
+  </table></div>
+  <div class="aviso"><b>Resumen del archivo frente a resumen de la imagen.</b> El resumen de una imagen de disco cubre <i>todo</i> el medio: archivos, sistema de archivos, fechas, espacio libre. Por eso conectar una USB sin bloqueo puede cambiar el resumen de la imagen aunque ningún archivo cambie, y con Windows casi siempre lo cambia: el sistema operativo escribe en el medio. En la copia de E-03 del Laboratorio 1 se ve: System Volume Information creada el 11 de diciembre.</div>
+  <div class="aviso" style="border-left-color:var(--azul);background:var(--azul-lav)"><b>Resumen del contenedor frente a resumen de los datos.</b> Una imagen en formato E01 guarda adentro el resumen de los datos del disco. Si alguien calcula <code>certutil</code> sobre el archivo <code>.E01</code>, obtiene el resumen del <i>contenedor</i> (comprimido, con metadatos y en segmentos), que nunca va a coincidir con el del acta. No es una alteración: es comparar dos cosas distintas. Es un error posible de quien contraperita sin conocer el formato.</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="p6">
+  <div class="sec-h"><div class="sec-n">Para leer y proyectar</div><h2>Cuando el resumen o la evidencia se dañan: casos y errores reales</h2></div>
+  <p>Unos son casos públicos documentados, con su fuente. Otros son errores frecuentes en la práctica pericial, sin un caso único que citar; van marcados así.</p>
+
+  <div class="caso"><h4><span class="chip n">Colombia · caso documentado</span> Los computadores de Raúl Reyes, 2008 a 2011</h4>
+  <p>Tras la operación del 1 de marzo de 2008, una unidad antiterrorista accedió directamente a los equipos incautados antes de hacer imágenes. El informe forense de Interpol (mayo de 2008) encontró 48.055 archivos con marcas de tiempo creadas, abiertas, modificadas o borradas por ese acceso directo entre el 1 y el 3 de marzo, y dijo que ese acceso inicial no se ajustó a las prácticas reconocidas internacionalmente. Interpol no halló alteración de los archivos de usuario, y aclaró que no validaba el contenido. En 2011 la Sala Penal de la Corte Suprema les negó valor probatorio en el proceso contra un excongresista, por la forma ilegal en que se obtuvieron.</p>
+  <p class="lec"><b>Lectura:</b> son dos problemas distintos, como en la Parte 16 del caso: el acceso sin imagen debilita la autenticidad y obliga a explicar cada cambio; la obtención ilegal excluye. Un perito tiene que poder separar los dos.</p>
+  <p class="src">Fuentes: Interpol, comunicado del informe forense, 15 de mayo de 2008; IPS News, 2008; cobertura de prensa del fallo de la Corte Suprema, mayo de 2011 (El Heraldo, Vanguardia, Colombia Reports).</p></div>
+
+  <div class="caso"><h4><span class="chip n">Caso documentado</span> La herramienta que contó 84 donde había una · Estados Unidos, 2011</h4>
+  <p>En el juicio de Casey Anthony, la fiscalía presentó que en el computador de la casa se había visitado 84 veces una página sobre cloroformo, con base en un reporte de la herramienta CacheBack. Después del juicio, el propio desarrollador de la herramienta dijo que el dato era un error: una sola visita. Otra herramienta usada por la policía ya mostraba una.</p>
+  <p class="lec"><b>Lectura:</b> la herramienta también es evidencia. Se anota nombre y versión, se valida y se contrasta con otra. Un resultado que solo da una herramienta es una hipótesis.</p>
+  <p class="src">Fuentes: ABA Journal y NBC News, julio de 2011, sobre la declaración de John Bradley.</p></div>
+
+  <div class="caso"><h4><span class="chip n">Caso documentado</span> Equipos dañados por los investigadores · Italia, 2007 a 2015</h4>
+  <p>En la investigación por la muerte de Meredith Kercher, los investigadores dañaron los computadores de Kercher y de Amanda Knox con una descarga eléctrica al intentar cargarlos. La Corte de Casación, al explicar en 2015 la absolución definitiva, reprochó esa y otras «omisiones culpables», y señaló que esos equipos quizá habrían aportado información útil.</p>
+  <p class="lec"><b>Lectura:</b> la manipulación física también destruye evidencia digital, y no hay segunda oportunidad. Por eso el primer respondiente protege y llama, no conecta.</p>
+  <p class="src">Fuentes: The Christian Science Monitor y CBC, septiembre de 2015, sobre la motivación de la Corte de Casación.</p></div>
+
+  <div class="caso"><h4><span class="chip n">Investigación publicada</span> El disco que se borra solo · discos de estado sólido</h4>
+  <p>Bell y Boddington (2010) mostraron que un disco de estado sólido puede eliminar datos por su cuenta, con sus rutinas internas de recolección de basura, sin ninguna orden del computador y aun conectado a un bloqueador de escritura. Consecuencia práctica: el contenido puede cambiar entre dos lecturas, así que una segunda imagen del mismo disco no tiene por qué dar el mismo resumen que la primera.</p>
+  <p class="lec"><b>Lectura:</b> en un SSD, el resumen que vale es el de la imagen que se tomó, con su hora; no se promete que «el disco» lo reproduzca. Se declara en el acta. Ojo: E-04, el portátil del caso, es de estado sólido.</p>
+  <p class="src">Fuente: G. B. Bell y R. Boddington, «Solid State Drives: The Beginning of the End for Current Practice in Digital Forensic Recovery?», Journal of Digital Forensics, Security and Law, vol. 5, n.º 3, 2010.</p></div>
+
+  <div class="caso"><h4><span class="chip n">Caso documentado</span> Sin resumen, sin autenticidad · Estados Unidos, 2007</h4>
+  <p>En <i>Lorraine v. Markel American Insurance Co.</i> (241 F.R.D. 534, D. Md. 2007), el juez se negó a considerar correos electrónicos que ninguna de las partes había autenticado. En su guía sobre cómo admitir información electrónica, señaló los valores hash como un medio para autenticarla y animó a las partes a acordarlos desde el intercambio de documentos.</p>
+  <p class="lec"><b>Lectura:</b> el resumen calculado al adquirir es lo que después permite decir «esto es lo mismo que se recogió». Calculado tarde, solo dice «esto es lo mismo desde que lo resumí».</p>
+  <p class="src">Fuente: comentarios a la decisión (ediscoverylaw.com; Mondaq, 2007).</p></div>
+
+  <div class="caso"><h4><span class="chip n">Caso documentado</span> «Dos archivos pueden tener el mismo hash» · Estados Unidos, 2008</h4>
+  <p>En <i>United States v. Cartier</i> (543 F.3d 442, 8.º Circuito, 2008), la defensa atacó una orden de registro basada en coincidencias de valores hash alegando que dos archivos distintos pueden compartirlo. El tribunal no aceptó el argumento en ese contexto. Pero la pregunta es legítima: con MD5 y SHA-1 ya se han fabricado colisiones (para SHA-1, la demostración pública fue en 2017; un malware real, Flame, usó en 2012 una colisión de MD5 para falsificar un certificado).</p>
+  <p class="lec"><b>Lectura:</b> para preservar evidencia hoy se usa SHA-256. MD5 y SHA-1 siguen en formatos y herramientas antiguos; si aparecen, se acompañan de SHA-256. Es el ejercicio 5, pregunta 4, del Laboratorio 1.</p>
+  <p class="src">Fuente: opinión del 8.º Circuito, n.º 07-3222.</p></div>
+
+  <h3>Errores frecuentes en la práctica <span class="chip">sin un caso único que citar</span></h3>
+  <div class="scroll"><table>
+    <thead><tr><th style="width:28%">Error</th><th>Por qué el resumen no coincide</th><th style="width:30%">Cómo se evita</th></tr></thead>
+    <tbody>
+      <tr><td><b>Resumir después de abrir</b></td><td>El perito abre el archivo para «ver qué tiene», guarda sin querer o el programa guarda solo, y resume después. El resumen certifica el archivo ya alterado</td><td>Resumir al adquirir, antes de abrir. Trabajar en copia</td></tr>
+      <tr><td><b>Resumir el archivo vivo de la nube</b></td><td>Se resume la copia sincronizada de OneDrive o SharePoint. Semanas después, la sincronización o un coautor la cambiaron</td><td>Exportar o descargar una copia, resumirla y custodiarla; preservar también el historial de versiones de la plataforma</td></tr>
+      <tr><td><b>Disco con sectores dañados</b></td><td>Cada lectura de un sector defectuoso puede devolver datos distintos, y la verificación no coincide con la adquisición</td><td>Herramienta que registre los sectores ilegibles; declarar el mapa de errores en el acta</td></tr>
+      <tr><td><b>Comparar el contenedor con los datos</b></td><td>Se calcula el resumen del <code>.E01</code> o de un segmento y se compara con el de los datos del disco</td><td>Verificar con la herramienta que lee el formato y compara el resumen interno</td></tr>
+      <tr><td><b>Extraer un teléfono encendido dos veces</b></td><td>Un teléfono vivo cambia a cada minuto: dos extracciones nunca dan el mismo resumen</td><td>El resumen que vale es el del archivo de extracción, con su hora; resúmenes por archivo extraído</td></tr>
+      <tr><td><b>Memoria «verificada»</b></td><td>La memoria no se puede volver a leer igual. No existe un resumen «de origen» con el que comparar</td><td>Resumir el volcado al terminar, declarar que es irrepetible y documentar herramienta y hora</td></tr>
+      <tr><td><b>Imprimir para aportar</b></td><td>El papel no tiene resumen: el juez lo valora como documento común (CGP, art. 247)</td><td>Aportar el mensaje de datos en su formato, con resumen, y la impresión solo como apoyo</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="p7">
+  <div class="sec-h"><div class="sec-n">Para leer y proyectar</div><h2>Lo que se usa en el mercado para copiar con bloqueo</h2></div>
+  <p>Los nombres sirven para reconocer lo que van a ver en un acta o en un laboratorio. Las marcas cambian de dueño y de versión. Lo que importa en el acta es otra cosa: <b>nombre, versión y número de serie</b> de la herramienta, y con qué pruebas está validada.</p>
+
+  <h3>Hardware · bloqueadores de escritura y duplicadores forenses</h3>
+  <div class="scroll"><table>
+    <thead><tr><th style="width:24%">Tipo</th><th>Ejemplos del mercado</th><th style="width:34%">Para qué sirve</th></tr></thead>
+    <tbody>
+      <tr><td><b>Bloqueador de escritura (puente)</b></td><td>Tableau, de OpenText (serie de puentes forenses para USB, SATA, IDE y PCIe) · WiebeTech, de CRU (Forensic UltraDock y bloqueadores USB)</td><td>Se conecta entre el disco de evidencia y el computador del perito: deja leer y bloquea toda escritura. Se usa con un programa de imagen</td></tr>
+      <tr><td><b>Duplicador forense autónomo</b></td><td>Tableau TX1 · Logicube Falcon-NEO · MediaClone SuperImager · Atola TaskForce</td><td>Hace la imagen sin computador, con bloqueo incorporado, resumen al vuelo y registro. Varios discos a la vez; algunos manejan discos con sectores dañados</td></tr>
+      <tr><td><b>Estación forense</b></td><td>FRED, de Digital Intelligence, con bahías de bloqueo integradas</td><td>Laboratorio fijo: adquisición y análisis en el mismo equipo</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Software · imagen, bloqueo y memoria</h3>
+  <div class="scroll"><table>
+    <thead><tr><th style="width:24%">Tipo</th><th>Ejemplos</th><th style="width:34%">Notas</th></tr></thead>
+    <tbody>
+      <tr><td><b>Imagen de disco, con interfaz</b></td><td>FTK Imager, de Exterro (gratuito) · Magnet Acquire (gratuito) · Guymager (libre, Linux) · EnCase Forensic, de OpenText · X-Ways Forensics</td><td>Generan imagen cruda (dd) o E01, calculan MD5, SHA-1 o SHA-256, verifican y dejan registro. No bloquean por sí solas: necesitan bloqueador o sistema que no escriba</td></tr>
+      <tr><td><b>Imagen por línea de comandos</b></td><td>dc3dd y dcfldd (versiones forenses de <code>dd</code>) · ewfacquire (de libewf, para E01)</td><td>Resumen al vuelo y registro de la operación. Útiles en servidores y en adquisición por red</td></tr>
+      <tr><td><b>Bloqueo por software</b></td><td>Distribuciones forenses que arrancan sin montar nada en escritura: CAINE, Tsurugi, Paladin (SUMURI) · en Linux, <code>blockdev --setro</code> y montaje <code>ro,noload</code> · en Windows, productos como SAFE Block</td><td>Sirven cuando no hay bloqueador físico. Ojo: en Linux, montar «solo lectura» un ext4 con diario puede escribir al reproducirlo; por eso <code>noload</code>. La política de registro de Windows que bloquea USB no reemplaza un bloqueador validado</td></tr>
+      <tr><td><b>Captura de memoria</b></td><td>Magnet RAM Capture y DumpIt (Magnet) · WinPmem · Belkasoft RAM Capturer (Windows) · LiME y AVML (Linux)</td><td>Se ejecutan en el equipo vivo, desde un medio del perito, y dejan huella en la memoria: se declara. Se ve en la sesión 4</td></tr>
+      <tr><td><b>Teléfonos</b></td><td>Cellebrite · MSAB XRY · Oxygen Forensic Detective · Magnet GrayKey</td><td>Extracción lógica, de sistema de archivos o física, según el modelo. Se ve en la sesión 4</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Formatos de imagen</h3>
+  <div class="scroll"><table>
+    <thead><tr><th style="width:24%">Formato</th><th>Qué guarda</th><th style="width:34%">Ojo con</th></tr></thead>
+    <tbody>
+      <tr><td><b>Crudo (dd, .raw, .001)</b></td><td>Los bytes del medio, nada más. El resumen va aparte, en el acta</td><td>Ocupa lo mismo que el disco. Lo lee cualquier herramienta</td></tr>
+      <tr><td><b>E01 / Ex01 (EWF)</b></td><td>Los bytes comprimidos, metadatos del caso, verificación por bloques y el resumen de los datos adentro</td><td>El resumen del archivo .E01 no es el de los datos (sección 5)</td></tr>
+      <tr><td><b>AFF4</b></td><td>Formato abierto, pensado para imágenes grandes y para memoria</td><td>Menos herramientas lo leen</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="aviso"><b>Cómo se elige una herramienta: que esté probada.</b> El programa CFTT (Computer Forensics Tool Testing) del NIST publica pruebas de bloqueadores de escritura, de hardware y de software, y de herramientas de imagen, con lo que hicieron bien y lo que no. Antes de usar una herramienta en un caso: buscar su informe de prueba o hacer una validación propia documentada, y anotar la versión exacta. Un laboratorio puede además acreditarse en ISO/IEC 17025. Eso es lo que se contesta cuando el abogado contrario pregunta «¿y cómo sabe que su herramienta no escribió?».</div>
+</section>
+
+<footer>
+  <span>Institución Universitaria de Envigado · Facultad de Ingeniería</span>
+  <span>SIO0014 · Análisis forense · Práctica de resúmenes · Caso ficticio con fines docentes</span>
+</footer>
+<div class="fila noimp" style="margin:10px 0 30px"><button type="button" onclick="window.print()">Imprimir o guardar como PDF</button></div>
+</div>
+
+<script>
+/* ---------- MD5 (RFC 1321) ---------- */
+function md5(bytes){
+  const K = new Uint32Array(64), S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 4294967296) >>> 0;
+  const n = bytes.length, total = ((n + 8) >> 6) + 1, M = new Uint32Array(total * 16);
+  for (let i = 0; i < n; i++) M[i >> 2] |= bytes[i] << ((i % 4) * 8);
+  M[n >> 2] |= 0x80 << ((n % 4) * 8);
+  M[total * 16 - 2] = (n * 8) >>> 0; M[total * 16 - 1] = Math.floor(n / 536870912) >>> 0;
+  let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+  for (let k = 0; k < total; k++){
+    let A = a0, B = b0, C = c0, D = d0;
+    for (let i = 0; i < 64; i++){
+      let F, g;
+      if (i < 16){ F = (B & C) | (~B & D); g = i; }
+      else if (i < 32){ F = (D & B) | (~D & C); g = (5 * i + 1) % 16; }
+      else if (i < 48){ F = B ^ C ^ D; g = (3 * i + 5) % 16; }
+      else { F = C ^ (B | ~D); g = (7 * i) % 16; }
+      F = (F + A + K[i] + M[k * 16 + g]) >>> 0;
+      A = D; D = C; C = B;
+      B = (B + ((F << S[i]) | (F >>> (32 - S[i])))) >>> 0;
+    }
+    a0 = (a0 + A) >>> 0; b0 = (b0 + B) >>> 0; c0 = (c0 + C) >>> 0; d0 = (d0 + D) >>> 0;
+  }
+  const out = new Uint8Array(16), w = [a0, b0, c0, d0];
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) out[i * 4 + j] = (w[i] >>> (8 * j)) & 255;
+  return hex(out);
+}
+async function sha(alg, b){ return hex(await crypto.subtle.digest(alg, b)); }
+function b64bytes(s){ const t = atob(s), b = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) b[i] = t.charCodeAt(i); return b; }
+
+/* ---------- archivos incrustados ---------- */
+const ARCH = {
+  "tarifas_A_original.csv": "Y29tZXJjaW87bm9tYnJlO3RhcmlmYQpDLTAxNDtQYW5hZGVyw61hIExhIMORYXBhOzQ4MDAKQy0wMjc7TW9kYSBFbnZpZ2Fkbzs1MjAwCkMtMTAzO0ZlcnJldGVyw61hIEVsIFRvcm5pbGxvOzYxMDAKQy0yMjE7Q2Fmw6kgSXRhZ8O8w607NDUwMAo=",
+  "tarifas_B_windows.csv": "Y29tZXJjaW87bm9tYnJlO3RhcmlmYQ0KQy0wMTQ7UGFuYWRlcsOtYSBMYSDDkWFwYTs0ODAwDQpDLTAyNztNb2RhIEVudmlnYWRvOzUyMDANCkMtMTAzO0ZlcnJldGVyw61hIEVsIFRvcm5pbGxvOzYxMDANCkMtMjIxO0NhZsOpIEl0YWfDvMOtOzQ1MDANCg==",
+  "tarifas_C_bom.csv": "77u/Y29tZXJjaW87bm9tYnJlO3RhcmlmYQpDLTAxNDtQYW5hZGVyw61hIExhIMORYXBhOzQ4MDAKQy0wMjc7TW9kYSBFbnZpZ2Fkbzs1MjAwCkMtMTAzO0ZlcnJldGVyw61hIEVsIFRvcm5pbGxvOzYxMDAKQy0yMjE7Q2Fmw6kgSXRhZ8O8w607NDUwMAo=",
+  "tarifas_D_espacio.csv": "Y29tZXJjaW87bm9tYnJlO3RhcmlmYQpDLTAxNDtQYW5hZGVyw61hIExhIMORYXBhOzQ4MDAKQy0wMjc7TW9kYSBFbnZpZ2Fkbzs1MjAwCkMtMTAzO0ZlcnJldGVyw61hIEVsIFRvcm5pbGxvOzYxMDAKQy0yMjE7Q2Fmw6kgSXRhZ8O8w607NDUwMCAK",
+  "tarifas_E_latin1.csv": "Y29tZXJjaW87bm9tYnJlO3RhcmlmYQpDLTAxNDtQYW5hZGVy7WEgTGEg0WFwYTs0ODAwCkMtMDI3O01vZGEgRW52aWdhZG87NTIwMApDLTEwMztGZXJyZXRlcu1hIEVsIFRvcm5pbGxvOzYxMDAKQy0yMjE7Q2Fm6SBJdGFn/O07NDUwMAo=",
+  "copia_final_REVISADA.csv": "Y29tZXJjaW87bm9tYnJlO3RhcmlmYQpDLTAxNDtQYW5hZGVyw61hIExhIMORYXBhOzQ4MDAKQy0wMjc7TW9kYSBFbnZpZ2Fkbzs1MjAwCkMtMTAzO0ZlcnJldGVyw61hIEVsIFRvcm5pbGxvOzYxMDAKQy0yMjE7Q2Fmw6kgSXRhZ8O8w607NDUwMAo=",
+  "Tarifas_liquidacion_ADQUIRIDO.xlsx": "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",
+  "Tarifas_liquidacion_APORTADO.xlsx": "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",
+  "Tarifas_liquidacion_VISTA_PROTEGIDA.xlsx": "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"
+};
+const B = {}; for (const k in ARCH) B[k] = b64bytes(ARCH[k]);
+const CSV = ["tarifas_A_original.csv","tarifas_B_windows.csv","tarifas_C_bom.csv","tarifas_D_espacio.csv","tarifas_E_latin1.csv","copia_final_REVISADA.csv"];
+const XL = [["Tarifas_liquidacion_ADQUIRIDO.xlsx","La copia que el perito resumió y custodió"],["Tarifas_liquidacion_APORTADO.xlsx","El archivo que llegó al proceso"],["Tarifas_liquidacion_VISTA_PROTEGIDA.xlsx","Una copia que el contraperito abrió en vista protegida, sin guardar"]];
+
+/* ---------- guardar respuestas ---------- */
+const CLAVE = "sio0014-practica-resumenes";
+let est = {}; try { est = JSON.parse(localStorage.getItem(CLAVE) || "{}"); } catch(e){}
+function guarda(){ try { localStorage.setItem(CLAVE, JSON.stringify(est)); } catch(e){} }
+$$("[data-k]").forEach(function(el){ if (est[el.dataset.k] != null) el.value = est[el.dataset.k]; el.addEventListener("input", function(){ est[el.dataset.k] = el.value; guarda(); }); });
+
+/* ---------- 1 ---------- */
+async function uno(){
+  const a = bytes($("t1").value), b = bytes($("t2").value);
+  $("a_md5").textContent = md5(a); $("b_md5").textContent = md5(b);
+  const a1 = await sha("SHA-1", a), b1 = await sha("SHA-1", b), a2 = await sha("SHA-256", a), b2 = await sha("SHA-256", b);
+  $("a_sha1").textContent = a1; $("b_sha1").textContent = b1;
+  let hA = "", hB = "", dig = 0, bits = 0;
+  for (let i = 0; i < 64; i++){
+    const d = a2[i] !== b2[i]; if (d) dig++;
+    hA += d ? '<span class="dif">' + a2[i] + "</span>" : a2[i];
+    hB += d ? '<span class="dif">' + b2[i] + "</span>" : b2[i];
+    let x = parseInt(a2[i], 16) ^ parseInt(b2[i], 16); while (x){ bits += x & 1; x >>= 1; }
+  }
+  $("a_sha256").innerHTML = hA; $("b_sha256").innerHTML = hB;
+  $("cuenta1").innerHTML = a2 === b2 ? "Los dos textos son idénticos: cámbienle algo al texto B." :
+    "SHA-256: cambiaron <b>" + dig + " de 64</b> dígitos y <b>" + bits + " de 256</b> bits (" + Math.round(bits / 2.56) + " %).";
+}
+$("t1").addEventListener("input", uno); $("t2").addEventListener("input", uno);
+
+/* ---------- 2 ---------- */
+function primerDistinto(a, b){
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) return i;
+  return a.length === b.length ? -1 : n;
+}
+function hx(b, i){ return i < b.length ? b[i].toString(16).padStart(2, "0").toUpperCase() : "—"; }
+(function(){
+  let h = "";
+  CSV.forEach(function(n, i){
+    h += '<tr><td class="c">' + n + '</td><td class="num">' + B[n].length + '</td><td>' + (i === 0 ? "—" :
+      '<select class="pred" data-k="p2_' + i + '"><option value=""></option><option>Igual a A</option><option>Distinto de A</option></select>') +
+      '</td><td class="hash" id="h2_' + i + '"></td><td id="e2_' + i + '"></td><td id="d2_' + i + '"></td></tr>';
+  });
+  $("tcsv").innerHTML = h;
+  $$("#tcsv [data-k]").forEach(function(el){ if (est[el.dataset.k] != null) el.value = est[el.dataset.k]; el.addEventListener("change", function(){ est[el.dataset.k] = el.value; guarda(); }); });
+})();
+$("go2").addEventListener("click", async function(){
+  const ref = await sha("SHA-256", B[CSV[0]]);
+  for (let i = 0; i < CSV.length; i++){
+    const b = B[CSV[i]], h = await sha("SHA-256", b);
+    $("h2_" + i).textContent = h;
+    if (i === 0){ $("e2_0").textContent = "referencia"; $("d2_0").textContent = "—"; continue; }
+    const ig = h === ref;
+    $("e2_" + i).innerHTML = ig ? '<span class="igual">Igual</span>' : '<span class="distinto">Distinto</span>';
+    const p = primerDistinto(B[CSV[0]], b);
+    $("d2_" + i).innerHTML = p < 0 ? "Ninguno: mismos bytes" :
+      "Byte " + p + ": A tiene <code>" + hx(B[CSV[0]], p) + "</code>, este tiene <code>" + hx(b, p) + "</code>";
+  }
+});
+$("ver2").addEventListener("click", function(){
+  const v = $("vista2"); v.style.display = v.style.display === "none" ? "block" : "none";
+  v.textContent = new TextDecoder("utf-8").decode(B[CSV[0]]);
+});
+
+/* ---------- 3 ---------- */
+let dictamen = "";
+(async function(){
+  dictamen = await sha("SHA-256", B[XL[0][0]]);
+  $("hdict").textContent = dictamen;
+  let h = "";
+  XL.forEach(function(x, i){ h += '<tr><td class="c">' + x[0] + '</td><td>' + x[1] + '</td><td class="num">' + B[x[0]].length + '</td><td class="hash" id="h3_' + i + '"></td><td id="e3_' + i + '"></td></tr>'; });
+  $("txlsx").innerHTML = h;
+})();
+$("go3").addEventListener("click", async function(){
+  for (let i = 0; i < XL.length; i++){
+    const h = await sha("SHA-256", B[XL[i][0]]);
+    $("h3_" + i).textContent = h;
+    $("e3_" + i).innerHTML = h === dictamen ? '<span class="igual">Sí</span>' : '<span class="distinto">No</span>';
+  }
+  $("zip3").disabled = false;
+});
+function u16(b, o){ return b[o] | (b[o + 1] << 8); }
+function u32(b, o){ return (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0; }
+function partes(b){
+  let e = -1;
+  for (let i = b.length - 22; i >= 0; i--) if (u32(b, i) === 0x06054b50){ e = i; break; }
+  if (e < 0) throw new Error("No es un ZIP");
+  const cant = u16(b, e + 10); let o = u32(b, e + 16); const r = {};
+  for (let k = 0; k < cant; k++){
+    const met = u16(b, o + 10), crc = u32(b, o + 16), comp = u32(b, o + 20), tam = u32(b, o + 24);
+    const nl = u16(b, o + 28), el = u16(b, o + 30), cl = u16(b, o + 32), loc = u32(b, o + 42);
+    const nombre = new TextDecoder().decode(b.subarray(o + 46, o + 46 + nl));
+    const ini = loc + 30 + u16(b, loc + 26) + u16(b, loc + 28);
+    r[nombre] = { crc: crc, tam: tam, met: met, datos: b.subarray(ini, ini + comp) };
+    o += 46 + nl + el + cl;
+  }
+  return r;
+}
+async function infla(p){
+  if (p.met === 0) return new TextDecoder().decode(p.datos);
+  const s = new Blob([p.datos]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return await new Response(s).text();
+}
+function lineas(x){ return x.replace(/></g, ">\n<").split("\n"); }
+function esc(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+$("zip3").addEventListener("click", async function(){
+  const A = partes(B[XL[0][0]]), P = partes(B[XL[1][0]]);
+  let h = '<h3 style="margin-top:14px">Las partes del ZIP, comparadas</h3><p>El CRC-32 lo guarda el propio ZIP para detectar errores de transmisión; no es un resumen criptográfico, pero sirve para ver qué parte cambió.</p><div class="scroll"><table><thead><tr><th>Parte</th><th>CRC-32 adquirido</th><th>CRC-32 aportado</th><th>¿Cambió?</th></tr></thead><tbody>';
+  const cambiadas = [];
+  Object.keys(A).forEach(function(n){
+    const c1 = A[n].crc.toString(16).padStart(8, "0"), c2 = P[n] ? P[n].crc.toString(16).padStart(8, "0") : "—";
+    const ca = c1 !== c2; if (ca) cambiadas.push(n);
+    h += '<tr><td class="c">' + n + '</td><td class="c">' + c1 + '</td><td class="c">' + c2 + '</td><td>' + (ca ? '<button type="button" class="sec" data-p="' + n + '">Cambió · ver</button>' : '<span class="igual">Igual</span>') + '</td></tr>';
+  });
+  h += "</tbody></table></div>";
+  $("partes3").innerHTML = h;
+  $$("#partes3 [data-p]").forEach(function(btn){
+    btn.addEventListener("click", async function(){
+      const n = btn.dataset.p, la = lineas(await infla(A[n])), lp = lineas(await infla(P[n]));
+      let x = "", y = "";
+      const m = Math.max(la.length, lp.length);
+      for (let i = 0; i < m; i++){
+        const d = la[i] !== lp[i];
+        x += d ? '<span class="m">' + esc(la[i] || "") + "</span>" : esc(la[i] || "") + "\n";
+        y += d ? '<span class="m">' + esc(lp[i] || "") + "</span>" : esc(lp[i] || "") + "\n";
+      }
+      $("dif3").innerHTML = '<h3 style="margin-top:12px">' + esc(n) + '</h3><div class="dos2"><div><div class="lab">Adquirido</div><pre class="xml">' + x + '</pre></div><div><div class="lab">Aportado</div><pre class="xml">' + y + "</pre></div></div>";
+      $("dif3").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+});
+
+/* ---------- 4 ---------- */
+(function(){
+  let h = "";
+  Object.keys(B).forEach(function(n){ h += '<button type="button" class="sec" data-d="' + n + '" style="margin:0 6px 6px 0">' + n + "</button>"; });
+  $("desc4").innerHTML = h;
+  $$("#desc4 [data-d]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([B[btn.dataset.d]]));
+      a.download = btn.dataset.d; document.body.appendChild(a); a.click(); a.remove();
+    });
+  });
+})();
+async function propio(f){
+  const b = new Uint8Array(await f.arrayBuffer());
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td class="c">' + esc(f.name) + '</td><td class="num">' + b.length + "</td><td>" + new Date(f.lastModified).toLocaleString("es-CO") + '</td><td class="hash">' + (await sha("SHA-256", b)) + "</td>";
+  $("tpropio").appendChild(tr);
+}
+$("propio").addEventListener("change", function(){ if (this.files[0]) propio(this.files[0]); this.value = ""; });
+const zs = $("soltar");
+zs.addEventListener("dragover", function(e){ e.preventDefault(); zs.classList.add("sobre"); });
+zs.addEventListener("dragleave", function(){ zs.classList.remove("sobre"); });
+zs.addEventListener("drop", function(e){ e.preventDefault(); zs.classList.remove("sobre"); if (e.dataTransfer.files[0]) propio(e.dataTransfer.files[0]); });
+
+uno();
+</script>
+
+</body>
+</html>
