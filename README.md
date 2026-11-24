@@ -31,11 +31,11 @@ Los laboratorios interactivos son **archivos HTML autocontenidos**. Se descargan
 ## Qué hay en cada carpeta
 
 - **[`caso/`](caso/)**: el caso Enlace Andino. La Parte A se lee desde la sesión 1. La Parte B llega en la sesión 5 y trae la evidencia de la defensa.
-- **[`guias/`](guias/)**: la guía del método forense, la guía de adquisición en la práctica, la guía del estudiante de la sesión 3 y las guías de las entregas 1 y 2.
+- **[`guias/`](guias/)**: la guía del método forense, la guía de adquisición en la práctica, la guía del estudiante de la sesión 3 y las guías de las entregas 1, 2 y 3.
 - **[`actividades/`](actividades/)**: las hojas de actividades de las sesiones 1, 2 y 5 y el diagnóstico inicial.
 - **[`laboratorios/`](laboratorios/)**: los laboratorios, como en la tabla de arriba.
 - **[`evidencia/`](evidencia/)**: las imágenes y registros que se analizan, cada uno con su archivo `RESUMENES-SHA256.txt`. Ver [`evidencia/README.md`](evidencia/README.md).
-- **[`presentaciones/`](presentaciones/)**: las presentaciones de las sesiones 1 a 5, en PowerPoint y en PDF.
+- **[`presentaciones/`](presentaciones/)**: las presentaciones de las sesiones 1 a 6, en PowerPoint y en PDF.
 - **[`retos/`](retos/)**: prácticas voluntarias fuera del caso. La primera es el [Data Leakage Case del NIST](retos/data-leakage/): un computador con Windows, dos USB y un CD, analizados solo con Autopsy para Windows, en una sesión de dos horas.
 
 ---
