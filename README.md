@@ -36,7 +36,7 @@ Los laboratorios interactivos son **archivos HTML autocontenidos**. Se descargan
 - **[`laboratorios/`](laboratorios/)**: los laboratorios, como en la tabla de arriba.
 - **[`evidencia/`](evidencia/)**: las imágenes y registros que se analizan, cada uno con su archivo `RESUMENES-SHA256.txt`. Ver [`evidencia/README.md`](evidencia/README.md).
 - **[`presentaciones/`](presentaciones/)**: las presentaciones de las sesiones 1 a 5, en PowerPoint y en PDF.
-- **[`retos/`](retos/)**: prácticas voluntarias fuera del caso. La primera es el [Data Leakage Case del NIST](retos/data-leakage/): un computador con Windows, dos USB y un CD, analizados en Autopsy.
+- **[`retos/`](retos/)**: prácticas voluntarias fuera del caso. La primera es el [Data Leakage Case del NIST](retos/data-leakage/): un computador con Windows, dos USB y un CD, analizados solo con Autopsy para Windows, en una sesión de dos horas.
 
 ---
 
